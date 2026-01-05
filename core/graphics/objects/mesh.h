@@ -66,57 +66,6 @@ typedef struct Mesh {
     char* name;
 } Mesh;
 
-// ==================== ПРОТОТИПЫ ФУНКЦИЙ ====================
-
-// Создание мешей
-Mesh* mesh_create_empty(const char* name);
-Mesh* mesh_create(Vertex* vertices, unsigned int vertexCount, 
-                  unsigned int* indices, unsigned int indexCount,
-                  const char* name);
-Mesh* mesh_create_simple(SimpleVertex* vertices, unsigned int vertexCount,
-                         unsigned int* indices, unsigned int indexCount,
-                         const char* name);
-Mesh* mesh_create_textured(TexturedVertex* vertices, unsigned int vertexCount,
-                           unsigned int* indices, unsigned int indexCount,
-                           const char* name);
-
-// Примитивы
-Mesh* mesh_create_triangle(Vec3 color, const char* name);
-Mesh* mesh_create_quad(float size, Vec3 color, const char* name);
-Mesh* mesh_create_cube(float size, Vec3 color, const char* name);
-Mesh* mesh_create_plane(float width, float height, Vec3 color, const char* name);
-Mesh* mesh_create_pyramid(float baseSize, float height, Vec3 color, const char* name);
-
-// Примитивы с текстурами
-Mesh* mesh_create_cube_textured(float size, GLTexture* texture, const char* name);
-Mesh* mesh_create_plane_textured(float width, float height, GLTexture* texture, const char* name);
-Mesh* mesh_create_quad_textured(float size, GLTexture* texture, const char* name);
-
-// Операции с мешем
-void mesh_set_color(Mesh* mesh, Vec3 color);
-void mesh_set_position(Mesh* mesh, Vec3 position);
-void mesh_set_rotation(Mesh* mesh, Vec3 rotation);
-void mesh_set_scale(Mesh* mesh, Vec3 scale);
-void mesh_translate(Mesh* mesh, Vec3 translation);
-void mesh_rotate(Mesh* mesh, Vec3 rotation);
-void mesh_scale_mesh(Mesh* mesh, Vec3 scaling); // Изменил имя, чтобы избежать конфликта
-
-// Операции с текстурой
-void mesh_set_texture(Mesh* mesh, GLTexture* texture);
-void mesh_remove_texture(Mesh* mesh);
-int mesh_has_texture(Mesh* mesh);
-GLTexture* mesh_get_texture(Mesh* mesh);
-
-// Утилиты
-void mesh_generate_buffers(Mesh* mesh);
-void mesh_update_buffers(Mesh* mesh);
-void mesh_draw(Mesh* mesh, Shader* shader);
-void mesh_draw_simple(Mesh* mesh);
-void mesh_destroy(Mesh* mesh);
-void mesh_print_info(Mesh* mesh);
-
-// ==================== РЕАЛИЗАЦИЯ ФУНКЦИЙ ====================
-
 // Создание пустого меша
 Mesh* mesh_create_empty(const char* name) {
     Mesh* mesh = (Mesh*)malloc(sizeof(Mesh));
