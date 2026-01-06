@@ -66,6 +66,14 @@ typedef struct Mesh {
     char* name;
 } Mesh;
 
+// ==================== FORWARD DECLARATIONS ====================
+
+// Операции с текстурой (объявляем раньше использования)
+void mesh_set_texture(Mesh* mesh, GLTexture* texture);
+void mesh_remove_texture(Mesh* mesh);
+
+// ==================== ФУНКЦИИ СОЗДАНИЯ МЕША ====================
+
 // Создание пустого меша
 Mesh* mesh_create_empty(const char* name) {
     Mesh* mesh = (Mesh*)malloc(sizeof(Mesh));
