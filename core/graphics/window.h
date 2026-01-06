@@ -16,6 +16,13 @@ MirulitWindow* NewWindow(int width, int height, const char* title) {
     glfwMakeContextCurrent(window);
     
     gladLoadGL();
+
+    glfwSwapInterval(0);
+    
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
+    glFrontFace(GL_CCW);
     
     return window;
 }
@@ -80,10 +87,13 @@ int isClose(MirulitWindow* window) {
     return glfwWindowShouldClose(window);
 }
 
+void GetEvent() {
+    glfwPollEvents();
+}
+
 void updateWindow(MirulitWindow* window) {
     glClear(GL_COLOR_BUFFER_BIT);
     glfwSwapBuffers(window);
-    glfwPollEvents();
 }
 
 void quitWindow(MirulitWindow* window) {

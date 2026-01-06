@@ -1,4 +1,4 @@
-// json_parser.h
+// json.h
 #ifndef JSON_PARSER_H
 #define JSON_PARSER_H
 
@@ -80,7 +80,7 @@ static void json_skip_whitespace(JsonParser* parser) {
 // Установка ошибки
 static void json_set_error(JsonParser* parser, const char* message) {
     if (parser->error == NULL) {
-        parser->error = malloc(256);
+        parser->error = (char*)malloc(256);
         snprintf(parser->error, 256, "Error at position %ld: %s", 
                  parser->pos - parser->json + 1, message);
     }
@@ -111,7 +111,7 @@ static JsonValue json_parse_string(JsonParser* parser) {
         len++;
     }
     
-    char* str = malloc(len + 1);
+    char* str = (char*)malloc(len + 1);
     const char* src = start;
     char* dst = str;
     
@@ -199,13 +199,13 @@ static JsonValue json_parse_array(JsonParser* parser) {
     }
     
     size_t capacity = 4;
-    JsonValue* items = malloc(capacity * sizeof(JsonValue));
+    JsonValue* items = (JsonValue*)malloc(capacity * sizeof(JsonValue));
     size_t count = 0;
     
     while (true) {
         if (count >= capacity) {
             capacity *= 2;
-            items = realloc(items, capacity * sizeof(JsonValue));
+            items = (JsonValue*)realloc(items, capacity * sizeof(JsonValue));
         }
         
         items[count] = json_parse_value(parser);
@@ -261,13 +261,13 @@ static JsonValue json_parse_object(JsonParser* parser) {
     }
     
     size_t capacity = 4;
-    JsonMember* members = malloc(capacity * sizeof(JsonMember));
+    JsonMember* members = (JsonMember*)malloc(capacity * sizeof(JsonMember));
     size_t count = 0;
     
     while (true) {
         if (count >= capacity) {
             capacity *= 2;
-            members = realloc(members, capacity * sizeof(JsonMember));
+            members = (JsonMember*)realloc(members, capacity * sizeof(JsonMember));
         }
         
         // Парсим ключ
@@ -390,7 +390,7 @@ static char* json_read_file(const char* filename) {
     long length = ftell(file);
     fseek(file, 0, SEEK_SET);
     
-    char* buffer = malloc(length + 1);
+    char* buffer = (char*)malloc(length + 1);
     if (!buffer) {
         fclose(file);
         return NULL;
