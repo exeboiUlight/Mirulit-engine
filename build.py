@@ -12,7 +12,7 @@ files_EDITOR = [
 
 # Разные библиотеки для Windows и Linux
 if sys.platform == "win32":
-    liberys = ["opengl32", "glfw3", "openal32", "gdi32", "libtcc", "imm32", "ole32", "comctl32", "uuid"]
+    liberys = ["opengl32", "glfw3", "openal32", "gdi32", "libtcc", "imm32", "ole32", "comctl32", "uuid", 'riched20', "comctl32"]
     editor += ".exe"
 else:
     liberys = ["GL", "glfw", "freetype", "openal", "lua5.4"]
@@ -26,6 +26,11 @@ for i in files_EDITOR:
 for j in liberys:
     command_output_editor += " -l" + j
 
+ommand_output_code_editor = ""
+
+for m in liberys:
+    ommand_output_code_editor += " -l" + m
+
 if sys.platform == "win32":
     # Windows компиляция
     os.system("cls")
@@ -37,6 +42,7 @@ if sys.platform == "win32":
     
     # Компиляция редактора
     os.system(f"gcc{console_flags}{debug_flags} {command_output_editor} app.o -o {editor} -Iinclude -Iexternal/imgui -L./ -L./dist -static-libgcc -static-libstdc++")
+
 else:
     # Linux компиляция
     os.system("clear")
