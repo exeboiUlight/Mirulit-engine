@@ -1,9 +1,15 @@
-#ifdef _WIN32
-    #ifdef MIRULIT_EXPORTS
-        #define MIRULIT_API __declspec(dllexport)
-    #else
-        #define MIRULIT_API __declspec(dllimport)
-    #endif
-#else
-    #define MIRULIT_API
+#ifndef MIRULIT_H
+#define MIRULIT_H
+
+#include <core/graphics/objects/object.h>
+#include <core/graphics/objects/mesh.h>
+#include <core/graphics/shader.h>
+#include <core/graphics/rgb.h>
+#include <windows.h>
+
+typedef struct {
+    void (*Start)();
+    void (*Update)();
+} MirulitScene;
+
 #endif

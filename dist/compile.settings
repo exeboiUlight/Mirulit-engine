@@ -1,8 +1,0 @@
-{
-    "scripts-path": [],
-    "scanes-file": ["scenes/test.json"],
-    "build-version": 0.1,
-    "company-name": "template-studio",
-    "description-projects": "test description for youre game project on mirulit game engine",
-    "name-project": "template-name"
-}
