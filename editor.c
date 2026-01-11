@@ -2,51 +2,22 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <errno.h>
+#include <sys/stat.h>
 
-// Функция для чтения содержимого файла в строку
-char* read_file_to_string(const char* filename) {
-    FILE* file = fopen(filename, "rb");
-    if (!file) {
-        fprintf(stderr, "Error: Cannot open file '%s' (%s)\n", filename, strerror(errno));
-        return NULL;
-    }
-    
-    fseek(file, 0, SEEK_END);
-    long file_size = ftell(file);
-    fseek(file, 0, SEEK_SET);
-    
-    if (file_size <= 0) {
-        fprintf(stderr, "Error: File '%s' is empty or invalid size: %ld\n", filename, file_size);
-        fclose(file);
-        return NULL;
-    }
-    
-    char* content = (char*)malloc(file_size + 1);
-    if (!content) {
-        fprintf(stderr, "Error: Memory allocation failed for file '%s'\n", filename);
-        fclose(file);
-        return NULL;
-    }
-    
-    size_t bytes_read = fread(content, 1, file_size, file);
-    if (bytes_read != (size_t)file_size) {
-        fprintf(stderr, "Error: Failed to read file '%s' (read %zu of %ld bytes)\n", 
-                filename, bytes_read, file_size);
-        free(content);
-        fclose(file);
-        return NULL;
-    }
-    
-    content[file_size] = '\0';
-    fclose(file);
-    
-    return content;
-}
+#ifdef _WIN32
+    #include <direct.h>
+    #include <windows.h>
+    #define mkdir(path, mode) _mkdir(path)
+    #define popen _popen
+    #define pclose _pclose
+#else
+    #include <unistd.h>
+    #include <errno.h>
+#endif
 
-// Функция для проверки существования файла
+// Простая функция для проверки существования файла
 int file_exists(const char* filename) {
-    FILE* file = fopen(filename, "r");
+    FILE* file = fopen(filename, "rb");
     if (file) {
         fclose(file);
         return 1;
@@ -54,138 +25,358 @@ int file_exists(const char* filename) {
     return 0;
 }
 
-// Функция для компиляции одного файла в EXE с помощью TCC, включая app.o
-int compile_single_file_to_exe_with_tcc(const char* source_code, const char* source_filename, 
-                                        const char* output_filename, const char* resource_obj) {
-    TCCState* tcc = tcc_new();
-    if (!tcc) {
-        fprintf(stderr, "Error: Failed to create TCC compiler instance\n");
-        return 1;
+// Создание директории если её нет
+void ensure_directory(const char* path) {
+    struct stat st = {0};
+    if (stat(path, &st) == -1) {
+        #ifdef _WIN32
+            _mkdir(path);
+        #else
+            mkdir(path, 0755);
+        #endif
+    }
+}
+
+// Функция для добавления ВСЕХ библиотек из папки engine/lib
+void add_all_library_files(TCCState* tcc, const char* lib_dir) {
+    printf("Looking for libraries in: %s\n", lib_dir);
+    
+    if (!file_exists(lib_dir)) {
+        printf("  Directory does not exist\n");
+        return;
     }
     
-    tcc_set_options(tcc, "-Wall");
+    // Создаем команду для поиска файлов библиотек
+    char find_cmd[512];
     
-    tcc_add_include_path(tcc, "engine/include");
-    tcc_add_include_path(tcc, "src");
-    tcc_add_include_path(tcc, ".");
+    #ifdef _WIN32
+        // На Windows
+        snprintf(find_cmd, sizeof(find_cmd), "dir /b \"%s\\*.lib\" \"%s\\*.a\" 2>nul", lib_dir, lib_dir);
+        FILE* pipe = popen(find_cmd, "r");
+    #else
+        // На Linux/Mac
+        snprintf(find_cmd, sizeof(find_cmd), "ls \"%s\"/*.a \"%s\"/*.lib 2>/dev/null", lib_dir, lib_dir);
+        FILE* pipe = popen(find_cmd, "r");
+    #endif
     
-    tcc_add_library_path(tcc, "engine/lib");
-    
-    if (tcc_set_output_type(tcc, TCC_OUTPUT_EXE) != 0) {
-        fprintf(stderr, "Error: Failed to set output type to EXE\n");
-        tcc_delete(tcc);
-        return 1;
-    }
-    
-    char* code_with_line_directive = (char*)malloc(strlen(source_code) + 50);
-    if (!code_with_line_directive) {
-        fprintf(stderr, "Error: Memory allocation failed\n");
-        tcc_delete(tcc);
-        return 1;
-    }
-    
-    sprintf(code_with_line_directive, "#line 1 \"%s\"\n%s", source_filename, source_code);
-    
-    if (tcc_compile_string(tcc, code_with_line_directive) != 0) {
-        free(code_with_line_directive);
-        tcc_delete(tcc);
-        return 1;
-    }
-    
-    free(code_with_line_directive);
-    
-    // Добавляем файл ресурсов app.o если он существует
-    if (resource_obj && file_exists(resource_obj)) {
-        printf("Adding resource file: %s\n", resource_obj);
-        if (tcc_add_file(tcc, resource_obj) != 0) {
-            fprintf(stderr, "Warning: Failed to add resource file '%s'\n", resource_obj);
+    if (pipe) {
+        char buffer[256];
+        int count = 0;
+        
+        while (fgets(buffer, sizeof(buffer), pipe)) {
+            // Убираем символ новой строки
+            buffer[strcspn(buffer, "\r\n")] = 0;
+            
+            if (buffer[0]) {
+                char full_path[512];
+                #ifdef _WIN32
+                    snprintf(full_path, sizeof(full_path), "%s\\%s", lib_dir, buffer);
+                #else
+                    snprintf(full_path, sizeof(full_path), "%s/%s", lib_dir, buffer);
+                #endif
+                
+                printf("  Adding: %s\n", buffer);
+                
+                // Добавляем файл библиотеки
+                if (tcc_add_file(tcc, full_path) != 0) {
+                    printf("  Warning: Failed to add %s\n", buffer);
+                }
+                count++;
+            }
         }
-    } else if (resource_obj) {
-        fprintf(stderr, "Warning: Resource file '%s' not found, skipping\n", resource_obj);
+        
+        pclose(pipe);
+        
+        if (count == 0) {
+            printf("  No library files found\n");
+        }
+    } else {
+        printf("  Could not scan directory\n");
     }
+}
+
+// Добавление системных библиотек
+void add_system_libraries(TCCState* tcc) {
+    printf("Adding system libraries\n");
     
     #ifdef _WIN32
         tcc_add_library(tcc, "kernel32");
         tcc_add_library(tcc, "user32");
         tcc_add_library(tcc, "gdi32");
-    #endif
-    
-    if (tcc_output_file(tcc, output_filename) != 0) {
-        tcc_delete(tcc);
-        return 1;
-    }
-    
-    tcc_delete(tcc);
-    return 0;
-}
-
-// Функция для создания директории
-int create_directory(const char* path) {
-    #ifdef _WIN32
-        char cmd[512];
-        snprintf(cmd, sizeof(cmd), "mkdir \"%s\" 2>nul", path);
+        tcc_add_library(tcc, "opengl32");
+        tcc_add_library(tcc, "winmm");
+        tcc_add_library(tcc, "ws2_32");
+        
+        // Проверяем наличие GLFW
+        if (file_exists("engine/lib/glfw3.dll") || 
+            file_exists("engine/lib/glfw3.lib") ||
+            file_exists("engine/lib/libglfw3.a")) {
+            printf("  Adding: glfw3\n");
+            tcc_add_library(tcc, "glfw3");
+        }
     #else
-        char cmd[512];
-        snprintf(cmd, sizeof(cmd), "mkdir -p \"%s\" 2>/dev/null", path);
+        tcc_add_library(tcc, "m");
+        tcc_add_library(tcc, "dl");
+        tcc_add_library(tcc, "pthread");
+        tcc_add_library(tcc, "GL");
+        tcc_add_library(tcc, "X11");
+        
+        // Проверяем наличие GLFW
+        if (file_exists("/usr/lib/libglfw.so") || 
+            file_exists("/usr/local/lib/libglfw.so") ||
+            file_exists("/usr/lib/x86_64-linux-gnu/libglfw.so") ||
+            file_exists("engine/lib/libglfw.a") ||
+            file_exists("engine/lib/libglfw.so")) {
+            printf("  Adding: glfw\n");
+            tcc_add_library(tcc, "glfw");
+        }
+        
+        // Для MacOS
+        #ifdef __APPLE__
+            tcc_add_library(tcc, "objc");
+            tcc_add_library(tcc, "Cocoa");
+            tcc_add_library(tcc, "IOKit");
+            tcc_add_library(tcc, "CoreFoundation");
+            tcc_add_library(tcc, "CoreVideo");
+        #endif
     #endif
-    
-    return system(cmd);
 }
 
-// Основная функция для компиляции только config.c в EXE
+// Показать справку
+void show_help(const char* program_name) {
+    printf("TCC Game Compiler\n");
+    printf("Usage: %s [options] <source.c>\n\n", program_name);
+    printf("Options:\n");
+    printf("  -o <file>     Output executable name\n");
+    printf("  -r <file>     Resource object file\n");
+    printf("  -I <path>     Add include path\n");
+    printf("  -L <path>     Add library path\n");
+    printf("  -l <lib>      Link with library\n");
+    printf("  -v            Verbose output\n");
+    printf("  -h, --help    Show this help\n");
+    printf("\nExamples:\n");
+    printf("  %s game.c\n", program_name);
+    printf("  %s -o mygame.exe main.c\n", program_name);
+    printf("  %s -I./include -L./lib -lglfw config.c\n", program_name);
+}
+
 int main(int argc, char** argv) {
-    const char* source_file = (argc > 1) ? argv[1] : "config.c";
-    const char* output_file = (argc > 2) ? argv[2] : "bin/config.exe";
-    const char* resource_file = (argc > 3) ? argv[3] : "app.o";
+    const char* source_file = "config.c";
+    const char* output_file = "bin/game.exe";
+    const char* resource_file = "app.o";
     
-    // Если ресурсный файл не указан, используем стандартный app.o
-    if (argc <= 3) {
-        printf("Using default resource file: app.o\n");
+    // Динамические списки для путей и библиотек
+    char** include_paths = NULL;
+    char** library_paths = NULL;
+    char** libraries = NULL;
+    int include_count = 0;
+    int library_path_count = 0;
+    int library_count = 0;
+    int verbose = 0;
+    
+    // Парсинг аргументов командной строки
+    for (int i = 1; i < argc; i++) {
+        if (argv[i][0] == '-') {
+            if (strcmp(argv[i], "-o") == 0 && i + 1 < argc) {
+                output_file = argv[++i];
+            }
+            else if (strcmp(argv[i], "-r") == 0 && i + 1 < argc) {
+                resource_file = argv[++i];
+            }
+            else if (strcmp(argv[i], "-I") == 0 && i + 1 < argc) {
+                include_paths = realloc(include_paths, (include_count + 1) * sizeof(char*));
+                include_paths[include_count++] = argv[++i];
+            }
+            else if (strcmp(argv[i], "-L") == 0 && i + 1 < argc) {
+                library_paths = realloc(library_paths, (library_path_count + 1) * sizeof(char*));
+                library_paths[library_path_count++] = argv[++i];
+            }
+            else if (strcmp(argv[i], "-l") == 0 && i + 1 < argc) {
+                libraries = realloc(libraries, (library_count + 1) * sizeof(char*));
+                libraries[library_count++] = argv[++i];
+            }
+            else if (strcmp(argv[i], "-v") == 0) {
+                verbose = 1;
+            }
+            else if (strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "--help") == 0) {
+                show_help(argv[0]);
+                return 0;
+            }
+            else {
+                fprintf(stderr, "Unknown option: %s\n", argv[i]);
+                fprintf(stderr, "Use %s --help for usage information\n", argv[0]);
+                return 1;
+            }
+        }
+        else {
+            // Первый не-опциональный аргумент - исходный файл
+            source_file = argv[i];
+        }
     }
     
-    FILE* test_file = fopen(source_file, "r");
-    if (!test_file) {
-        fprintf(stderr, "Error: Source file '%s' not found\n", source_file);
+    printf("TCC Compiler\n");
+    printf("============\n");
+    printf("Source: %s\n", source_file);
+    printf("Output: %s\n", output_file);
+    printf("Resource: %s\n\n", resource_file);
+    
+    // Проверяем исходный файл
+    if (!file_exists(source_file)) {
+        fprintf(stderr, "ERROR: Source file '%s' not found!\n", source_file);
+        
+        // Проверяем альтернативные имена
+        const char* alternatives[] = {"main.c", "game.c", "src/main.c", NULL};
+        for (int i = 0; alternatives[i] != NULL; i++) {
+            if (file_exists(alternatives[i])) {
+                printf("Did you mean: %s %s\n", argv[0], alternatives[i]);
+            }
+        }
         return 1;
     }
-    fclose(test_file);
     
-    char output_dir[256] = {0};
-    const char* last_slash = strrchr(output_file, '/');
-    #ifdef _WIN32
-        const char* last_backslash = strrchr(output_file, '\\');
-        if (last_backslash && (!last_slash || last_backslash > last_slash)) {
-            last_slash = last_backslash;
-        }
-    #endif
-    
+    // Создаем выходную директорию
+    char output_dir[256];
+    strncpy(output_dir, output_file, sizeof(output_dir));
+    char* last_slash = strrchr(output_dir, '/');
+    if (!last_slash) last_slash = strrchr(output_dir, '\\');
     if (last_slash) {
-        size_t dir_len = last_slash - output_file;
-        if (dir_len < sizeof(output_dir)) {
-            strncpy(output_dir, output_file, dir_len);
-            output_dir[dir_len] = '\0';
-            create_directory(output_dir);
-        }
+        *last_slash = '\0';
+        ensure_directory(output_dir);
+    } else {
+        // Если нет пути, создаем папку bin
+        ensure_directory("bin");
     }
     
-    char* source_code = read_file_to_string(source_file);
-    if (!source_code) {
+    // Создаем компилятор
+    TCCState* tcc = tcc_new();
+    if (!tcc) {
+        fprintf(stderr, "ERROR: Cannot create TCC instance\n");
         return 1;
     }
     
-    printf("Compiling %s to %s with resource file %s\n", 
-           source_file, output_file, resource_file);
+    // Настройки
+    tcc_set_output_type(tcc, TCC_OUTPUT_EXE);
     
-    int result = compile_single_file_to_exe_with_tcc(source_code, source_file, 
-                                                    output_file, resource_file);
+    // Добавляем стандартные пути include
+    tcc_add_include_path(tcc, "engine/include");
+    tcc_add_include_path(tcc, ".");
+    tcc_add_include_path(tcc, "include");
+    tcc_add_include_path(tcc, "src");
     
-    free(source_code);
-    
-    if (result == 0) {
-        printf("Compilation successful: %s\n", output_file);
-    } else {
-        fprintf(stderr, "Compilation failed\n");
+    // Добавляем пользовательские пути include
+    for (int i = 0; i < include_count; i++) {
+        if (verbose) printf("Adding include path: %s\n", include_paths[i]);
+        tcc_add_include_path(tcc, include_paths[i]);
     }
     
-    return result;
+    // Добавляем стандартные пути для библиотек
+    tcc_add_library_path(tcc, "engine/lib");
+    tcc_add_library_path(tcc, "lib");
+    
+    // Добавляем пользовательские пути для библиотек
+    for (int i = 0; i < library_path_count; i++) {
+        if (verbose) printf("Adding library path: %s\n", library_paths[i]);
+        tcc_add_library_path(tcc, library_paths[i]);
+    }
+    
+    // 1. Компилируем исходный файл
+    printf("1. Compiling: %s\n", source_file);
+    if (tcc_add_file(tcc, source_file) != 0) {
+        fprintf(stderr, "ERROR: Failed to compile %s\n", source_file);
+        
+        // Даем подсказки
+        printf("\nPossible issues:\n");
+        printf("  - Missing include files in engine/include/\n");
+        printf("  - Syntax errors in source code\n");
+        printf("  - Required headers not found\n");
+        
+        tcc_delete(tcc);
+        free(include_paths);
+        free(library_paths);
+        free(libraries);
+        return 1;
+    }
+    
+    // 2. Добавляем ресурсы
+    if (file_exists(resource_file)) {
+        printf("2. Adding resource: %s\n", resource_file);
+        if (tcc_add_file(tcc, resource_file) != 0) {
+            printf("  Warning: Could not add %s (may be incompatible format)\n", resource_file);
+        }
+    } else {
+        printf("2. Resource file not found: %s\n", resource_file);
+    }
+    
+    // 3. Добавляем библиотеки из engine/lib
+    printf("3. Adding libraries from engine/lib\n");
+    add_all_library_files(tcc, "engine/lib");
+    
+    // 4. Добавляем пользовательские библиотеки
+    for (int i = 0; i < library_count; i++) {
+        printf("  Adding library: %s\n", libraries[i]);
+        tcc_add_library(tcc, libraries[i]);
+    }
+    
+    // 5. Добавляем системные библиотеки
+    add_system_libraries(tcc);
+    
+    // 6. Создаем выходной файл
+    printf("\n4. Creating output: %s\n", output_file);
+    if (tcc_output_file(tcc, output_file) != 0) {
+        fprintf(stderr, "ERROR: Failed to create output file\n");
+        
+        printf("\nTroubleshooting:\n");
+        printf("  - Check that all required libraries exist\n");
+        printf("  - Verify library paths are correct\n");
+        printf("  - Ensure output directory is writable\n");
+        
+        tcc_delete(tcc);
+        free(include_paths);
+        free(library_paths);
+        free(libraries);
+        return 1;
+    }
+    
+    // Очистка
+    tcc_delete(tcc);
+    free(include_paths);
+    free(library_paths);
+    free(libraries);
+    
+    // Проверяем, что файл создан
+    if (file_exists(output_file)) {
+        printf("\n✅ SUCCESS: Compilation completed!\n");
+        printf("   Output: %s\n", output_file);
+        
+        // Получаем размер файла
+        FILE* f = fopen(output_file, "rb");
+        if (f) {
+            fseek(f, 0, SEEK_END);
+            long size = ftell(f);
+            fclose(f);
+            
+            if (size < 1024) 
+                printf("   Size: %ld bytes\n", size);
+            else if (size < 1024*1024) 
+                printf("   Size: %.1f KB\n", size/1024.0);
+            else 
+                printf("   Size: %.1f MB\n", size/(1024.0*1024.0));
+        }
+        
+        #ifdef _WIN32
+            printf("   Run: %s\n", output_file);
+        #else
+            // Проверяем, есть ли права на выполнение
+            if (access(output_file, X_OK) == 0) {
+                printf("   Run: ./%s\n", output_file);
+            } else {
+                printf("   Note: File may not be executable, run: chmod +x %s\n", output_file);
+            }
+        #endif
+    } else {
+        fprintf(stderr, "\n❌ ERROR: Output file was not created\n");
+        return 1;
+    }
+    
+    return 0;
 }

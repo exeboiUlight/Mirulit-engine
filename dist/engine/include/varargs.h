@@ -1,12 +1,11 @@
-/**
- * This file has no copyright assigned and is placed in the Public Domain.
- * This file is part of the w64 mingw-runtime package.
- * No warranty is given; refer to the file DISCLAIMER within this package.
- */
 #ifndef _VARARGS_H
 #define _VARARGS_H
 
-#error "TinyCC no longer implements <varargs.h>."
-#error "Revise your code to use <stdarg.h>."
+#include <stdarg.h>
+
+#define va_dcl
+#define va_alist __va_alist
+#undef va_start
+#define va_start(ap) ap = __builtin_varargs_start
 
 #endif
