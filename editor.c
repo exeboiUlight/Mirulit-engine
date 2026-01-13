@@ -37,7 +37,7 @@ void ensure_directory(const char* path) {
     }
 }
 
-// Функция для добавления ВСЕХ библиотек из папки engine/lib
+// Функция для добавления ВСЕХ библиотек из папки lib
 void add_all_library_files(TCCState* tcc, const char* lib_dir) {
     printf("Looking for libraries in: %s\n", lib_dir);
     
@@ -106,14 +106,6 @@ void add_system_libraries(TCCState* tcc) {
         tcc_add_library(tcc, "opengl32");
         tcc_add_library(tcc, "winmm");
         tcc_add_library(tcc, "ws2_32");
-        
-        // Проверяем наличие GLFW
-        if (file_exists("engine/lib/glfw3.dll") || 
-            file_exists("engine/lib/glfw3.lib") ||
-            file_exists("engine/lib/libglfw3.a")) {
-            printf("  Adding: glfw3\n");
-            tcc_add_library(tcc, "glfw3");
-        }
     #else
         tcc_add_library(tcc, "m");
         tcc_add_library(tcc, "dl");
@@ -125,8 +117,8 @@ void add_system_libraries(TCCState* tcc) {
         if (file_exists("/usr/lib/libglfw.so") || 
             file_exists("/usr/local/lib/libglfw.so") ||
             file_exists("/usr/lib/x86_64-linux-gnu/libglfw.so") ||
-            file_exists("engine/lib/libglfw.a") ||
-            file_exists("engine/lib/libglfw.so")) {
+            file_exists("lib/libglfw.a") ||
+            file_exists("lib/libglfw.so")) {
             printf("  Adding: glfw\n");
             tcc_add_library(tcc, "glfw");
         }
@@ -258,7 +250,7 @@ int main(int argc, char** argv) {
     tcc_set_output_type(tcc, TCC_OUTPUT_EXE);
     
     // Добавляем стандартные пути include
-    tcc_add_include_path(tcc, "engine/include");
+    tcc_add_include_path(tcc, "include");
     tcc_add_include_path(tcc, ".");
     tcc_add_include_path(tcc, "include");
     tcc_add_include_path(tcc, "src");
@@ -270,7 +262,7 @@ int main(int argc, char** argv) {
     }
     
     // Добавляем стандартные пути для библиотек
-    tcc_add_library_path(tcc, "engine/lib");
+    tcc_add_library_path(tcc, "lib");
     tcc_add_library_path(tcc, "lib");
     
     // Добавляем пользовательские пути для библиотек
@@ -286,7 +278,7 @@ int main(int argc, char** argv) {
         
         // Даем подсказки
         printf("\nPossible issues:\n");
-        printf("  - Missing include files in engine/include/\n");
+        printf("  - Missing include files in include/\n");
         printf("  - Syntax errors in source code\n");
         printf("  - Required headers not found\n");
         
@@ -307,9 +299,9 @@ int main(int argc, char** argv) {
         printf("2. Resource file not found: %s\n", resource_file);
     }
     
-    // 3. Добавляем библиотеки из engine/lib
-    printf("3. Adding libraries from engine/lib\n");
-    add_all_library_files(tcc, "engine/lib");
+    // 3. Добавляем библиотеки из lib
+    printf("3. Adding libraries from lib\n");
+    add_all_library_files(tcc, "lib");
     
     // 4. Добавляем пользовательские библиотеки
     for (int i = 0; i < library_count; i++) {
