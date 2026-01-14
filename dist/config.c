@@ -4,15 +4,10 @@
 #include <string.h>
 #include <Mirulit.h>
 #include <mirulit/utils.h>
+#include <mirulit/math.h>
 #include <GL/gl.h>
 
 int main() {
-
-    int a;
-
-    scanf("%d", &a);
-
-
     if (!mirulitInit()) {
         return -1;
     }
@@ -25,8 +20,6 @@ int main() {
     }
 
     mirulitMakeContextCurrent(window);
-
-    GLuint test;
 
     while (!mirulitWindowShouldClose(window)) {
         glClear(GL_COLOR_BUFFER_BIT);
