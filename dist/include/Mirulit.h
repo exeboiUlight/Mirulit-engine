@@ -1,15 +1,22 @@
 #ifndef MIRULIT_H
 #define MIRULIT_H
 
-#include <core/graphics/objects/object.h>
-#include <core/graphics/objects/mesh.h>
-#include <core/graphics/shader.h>
-#include <core/graphics/rgb.h>
-#include <windows.h>
+#include <mirulit/utils.h>
+
+typedef struct {
+    void (*Scene)();
+    void (*Main_Sript)();
+} NirulitScene;
 
 typedef struct {
     void (*Start)();
     void (*Update)();
-} MirulitScene;
+    void (*End)();
+} MirulitScript;
+
+typedef struct {
+    void (*Start)();
+    void (*Update)();
+} MirulitShader;
 
 #endif
