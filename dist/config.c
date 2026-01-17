@@ -1,51 +1,24 @@
 #define MIRULIT_IMPLEMENTATION
 
-#include <stdio.h>
-#include <string.h>
 #include <Mirulit.h>
-#include <mirulit/utils.h>
-#include <mirulit/math.h>
-#include <GL/gl.h>
+
+void Update() {}
 
 int main() {
-    if (!mirulitInit()) {
-        return -1;
-    }
-
-    MirulitWindow* window = mirulitCreateWindow(1200, 600, "Mirulit game engine", NULL, NULL);
+    
+    MirulitWindow* window = MirulitEngineInit(1200, 600, "Mirulit game engine", (Vector3){100, 100, 100});
     if (!window) {
-        fprintf(stderr, "Не удалось создать окно\n");
-        mirulitTerminate();
         return -1;
     }
 
-    mirulitMakeContextCurrent(window);
+    Object3D Scene1[0];
+    int scene1Count = 0;
 
-    while (!mirulitWindowShouldClose(window)) {
-        glClear(GL_COLOR_BUFFER_BIT);
+    MirulitEngineScene(window, Scene1, scene1Count, 0, 0, Update);
 
-        glPushMatrix();
+    MirulitEngineEndScene(Scene1, scene1Count);
 
-        glBegin(GL_TRIANGLES);
-        glColor3f(1.0f, 0.0f, 0.0f);
-        glVertex2f(-0.5f, -0.5f);
-
-        glColor3f(0.0f, 1.0f, 0.0f);
-        glVertex2f(0.5f, -0.5f);
-
-        glColor3f(0.0f, 0.0f, 1.0f);
-        glVertex2f(0.0f, 0.5f);
-        glEnd();
-
-        glPopMatrix();
-
-        mirulitPollEvents();
-        mirulitSwapBuffers(window);
-        mirulitWaitEventsTimeout(0.016);
-    }
-
-    mirulitDestroyWindow(window);
-    mirulitTerminate();
+    MirulitEngineDestroy(window);
 
     return 0;
 }
