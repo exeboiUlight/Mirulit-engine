@@ -1,5 +1,4 @@
 #include <mirulit/window.h>
-#include <mirulit/mesh.h>
 #include <mirulit/maths.h>
 
 /* Callback для обработки клавиш */
