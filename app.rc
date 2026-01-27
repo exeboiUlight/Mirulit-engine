@@ -20,7 +20,7 @@ BEGIN
             VALUE "FileDescription", "Mirulit Editor"
             VALUE "FileVersion", "1.0.0.1"
             VALUE "InternalName", "editor"
-            VALUE "LegalCopyright", "Copyright © 2024 MiruLit-studio"
+            VALUE "LegalCopyright", "Copyright © 2026 MiruLit-studio"
             VALUE "OriginalFilename", "editor.exe"
             VALUE "ProductName", "Mirulit Game Engine"
             VALUE "ProductVersion", "1.0.0.1"
