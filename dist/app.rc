@@ -1,6 +1,6 @@
 #include <windows.h>
 
-IDI_APP_ICON ICON "engine/icons/app.ico"
+IDI_APP_ICON ICON "bin/engine/icons/app.ico"
 
 VS_VERSION_INFO VERSIONINFO
 FILEVERSION 0,0,0,1
