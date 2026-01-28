@@ -8,6 +8,9 @@ int enemies_destroyed = 0;
 bool game_paused = false;
 bool is_fullscreen = false;
 
+// Текстура игрока
+SDL_Texture* player_texture = NULL;
+
 // Глобальная переменная для скорости игрока
 static MIR_Vec2 player_velocity = {0, 0};
 
@@ -118,9 +121,6 @@ void PlayerUpdate(MIR_Entity* self, float dt) {
         int particle_count = (int)(3 + move_magnitude * 2);
         CreateWalkParticles(self->transform.position, normalized_move_dir, particle_count);
     }
-    
-    // УДАЛЕН КОД С ОРАНЖЕВЫМИ ПАРТИКЛАМИ ДВИГАТЕЛЯ
-    // Теперь частицы создаются только при ходьбе
 }
 
 void EnemyUpdate(MIR_Entity* self, float dt) {
@@ -204,12 +204,27 @@ int main(void) {
         return 1;
     }
     
+    // Загрузка текстуры игрока
+    player_texture = MIR_LoadTexture("engine/icons/64px.png");
+    if (!player_texture) {
+        printf("Failed to load player texture! Using default color.\n");
+        // Если текстура не загрузилась, можно использовать цветной прямоугольник
+    }
+    
     // Создание игрока
     player = MIR_CreateEntity("Player");
     player->transform.position = (MIR_Vec2){400, 300};
     player->transform.scale = (MIR_Vec2){64, 64};
     
-    player->sprite.color = MIR_COLOR_CYAN;
+    // Настройка спрайта
+    if (player_texture) {
+        player->sprite.texture = player_texture;
+        player->sprite.color = MIR_COLOR_WHITE; // Белый цвет для сохранения исходных цветов текстуры
+        player->sprite.source_rect = (MIR_Rect){0, 0, 64, 64}; // Предполагаем, что текстура 64x64
+    } else {
+        player->sprite.color = MIR_COLOR_CYAN; // Цвет по умолчанию
+    }
+    
     player->update = PlayerUpdate;
     player->collider.bounds = (MIR_Rect){0, 0, 40, 40};
     player->collider.enabled = true;
@@ -335,6 +350,12 @@ int main(void) {
         
         // Конец кадра
         MIR_EndFrame();
+    }
+    
+    // Очистка текстуры (если она не была привязана к сущности)
+    if (player_texture) {
+        SDL_DestroyTexture(player_texture);
+        player_texture = NULL;
     }
     
     // Завершение

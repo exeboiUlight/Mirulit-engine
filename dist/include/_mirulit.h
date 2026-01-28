@@ -15,7 +15,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
-#include <glad/glad.h>
 
 #ifdef MIRULIT_ENABLE_SDL_IMAGE
 #include <SDL3_image/SDL_image.h>
