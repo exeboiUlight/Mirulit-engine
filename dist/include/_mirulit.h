@@ -15,6 +15,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
+#include <glad/glad.h>
 
 #ifdef MIRULIT_ENABLE_SDL_IMAGE
 #include <SDL3_image/SDL_image.h>
@@ -142,24 +143,6 @@ typedef struct {
     bool playing;
 } MIR_Animation;
 
-// Звук (заглушка, можно расширить)
-typedef struct {
-    void* data; // SDL_AudioStream* или подобное
-    float volume;
-    bool playing;
-} MIR_Sound;
-
-// UI элемент
-typedef struct {
-    MIR_Rect rect;
-    char text[128];
-    MIR_Color color;
-    MIR_Color text_color;
-    bool hovered;
-    bool clicked;
-    void (*on_click)(void);
-} MIR_UIElement;
-
 // Основной движок
 typedef struct {
     // SDL
@@ -208,10 +191,6 @@ typedef struct {
     int draw_calls;
     int update_calls;
     int particle_count;
-    
-    // UI
-    MIR_UIElement ui_elements[50];
-    int ui_count;
     
     // Ресурсы
     SDL_Texture* textures[100];
@@ -446,20 +425,6 @@ void MIR_ProcessEvents(void) {
                         _mir->mouse_down[button] = true;
                     }
                     _mir->mouse_buttons[button] = true;
-                    
-                    // Обновление UI
-                    for (int i = 0; i < _mir->ui_count; i++) {
-                        MIR_UIElement* ui = &_mir->ui_elements[i];
-                        if (ui->rect.x <= _mir->mouse_position.x &&
-                            _mir->mouse_position.x <= ui->rect.x + ui->rect.w &&
-                            ui->rect.y <= _mir->mouse_position.y &&
-                            _mir->mouse_position.y <= ui->rect.y + ui->rect.h) {
-                            ui->clicked = true;
-                            if (ui->on_click) {
-                                ui->on_click();
-                            }
-                        }
-                    }
                 }
                 break;
             }
@@ -469,11 +434,6 @@ void MIR_ProcessEvents(void) {
                 if (button >= 0 && button < MIRULIT_MAX_BUTTONS) {
                     _mir->mouse_up[button] = true;
                     _mir->mouse_buttons[button] = false;
-                    
-                    // Сброс UI
-                    for (int i = 0; i < _mir->ui_count; i++) {
-                        _mir->ui_elements[i].clicked = false;
-                    }
                 }
                 break;
             }
@@ -489,16 +449,6 @@ void MIR_ProcessEvents(void) {
                 _mir->mouse_world_position.y = 
                     (_mir->mouse_position.y - _mir->height / 2.0f) / _mir->camera.zoom + 
                     _mir->camera.position.y;
-                
-                // Обновление UI hover
-                for (int i = 0; i < _mir->ui_count; i++) {
-                    MIR_UIElement* ui = &_mir->ui_elements[i];
-                    ui->hovered = 
-                        (ui->rect.x <= _mir->mouse_position.x &&
-                         _mir->mouse_position.x <= ui->rect.x + ui->rect.w &&
-                         ui->rect.y <= _mir->mouse_position.y &&
-                         _mir->mouse_position.y <= ui->rect.y + ui->rect.h);
-                }
                 break;
                 
             case SDL_EVENT_MOUSE_WHEEL:
@@ -565,35 +515,6 @@ void MIR_BeginFrame(void) {
 
 void MIR_EndFrame(void) {
     if (!_mir_initialized || !_mir) return;
-    
-    // Отрисовка UI
-    for (int i = 0; i < _mir->ui_count; i++) {
-        MIR_UIElement* ui = &_mir->ui_elements[i];
-        
-        // Фон
-        MIR_Color bg_color = ui->color;
-        if (ui->hovered) {
-            bg_color.r = MIR_Math_Clamp(bg_color.r + 30, 0, 255);
-            bg_color.g = MIR_Math_Clamp(bg_color.g + 30, 0, 255);
-            bg_color.b = MIR_Math_Clamp(bg_color.b + 30, 0, 255);
-        }
-        if (ui->clicked) {
-            bg_color.r = MIR_Math_Clamp(bg_color.r - 30, 0, 255);
-            bg_color.g = MIR_Math_Clamp(bg_color.g - 30, 0, 255);
-            bg_color.b = MIR_Math_Clamp(bg_color.b - 30, 0, 255);
-        }
-        
-        SDL_SetRenderDrawColor(_mir->renderer, 
-                              bg_color.r, bg_color.g, bg_color.b, bg_color.a);
-        SDL_FRect rect = {ui->rect.x, ui->rect.y, ui->rect.w, ui->rect.h};
-        SDL_RenderFillRect(_mir->renderer, &rect);
-        
-        // Рамка
-        SDL_SetRenderDrawColor(_mir->renderer, 
-                              ui->text_color.r, ui->text_color.g, 
-                              ui->text_color.b, ui->text_color.a);
-        SDL_RenderRect(_mir->renderer, &rect);
-    }
     
     // Отображение
     SDL_RenderPresent(_mir->renderer);
@@ -1114,28 +1035,6 @@ void MIR_ResolveCollisions(void) {
     }
 }
 
-// ==================== UI СИСТЕМА ====================
-
-MIR_UIElement* MIR_CreateButton(MIR_Rect rect, const char* text, 
-                               MIR_Color color, MIR_Color text_color,
-                               void (*on_click)(void)) {
-    if (!_mir_initialized || !_mir || _mir->ui_count >= 50) return NULL;
-    
-    MIR_UIElement* button = &_mir->ui_elements[_mir->ui_count++];
-    button->rect = rect;
-    button->color = color;
-    button->text_color = text_color;
-    button->on_click = on_click;
-    button->hovered = false;
-    button->clicked = false;
-    
-    if (text) {
-        strncpy(button->text, text, sizeof(button->text) - 1);
-    }
-    
-    return button;
-}
-
 // ==================== УТИЛИТЫ ====================
 
 float MIR_GetDeltaTime(void) {
@@ -1239,11 +1138,7 @@ void MIR_Quit(void) {
 void MIR_DrawDebugInfo(void) {
     if (!_mir_initialized || !_mir) return;
     
-    // Фон для текста
-    MIR_DrawRect((MIR_Rect){10, 10, 200, 120}, (MIR_Color){0, 0, 0, 180});
-    
-    // Здесь можно добавить вывод текста через SDL_ttf
-    // Для простоты выводим в консоль
+    // Вывод в консоль
     static int last_fps = 0;
     if (_mir->fps != last_fps) {
         printf("\r[MIRULIT] FPS: %3d | Entities: %3d | Particles: %3d | Draws: %3d", 
