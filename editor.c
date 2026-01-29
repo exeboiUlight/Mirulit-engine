@@ -380,7 +380,7 @@ int main(int argc, char** argv) {
         }
     }
     
-    printf("TCC Compiler\n");
+    printf("Mirlit Compiler\n");
     printf("============\n");
     printf("Output: %s\n", output_file);
     printf("Resource: %s\n", resource_file);
