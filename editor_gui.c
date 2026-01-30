@@ -946,6 +946,11 @@ int main(void) {
     struct nk_font_atlas* atlas;
     nk_glfw3_font_stash_begin(&g_state.nk_glfw, &atlas);
     struct nk_font* font = nk_font_atlas_add_default(atlas, 16, NULL);
+    nk_rune range[] = {
+        0x0020, 0x00FF, // Basic Latin + Latin Supplement
+        0x0400, 0x044F, // Cyrillic
+        0, };
+    font->config->range = range;
     nk_glfw3_font_stash_end(&g_state.nk_glfw);
     
     if (font) {
