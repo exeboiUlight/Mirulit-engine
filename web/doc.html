@@ -126,6 +126,8 @@
             font-size: 14px;
             line-height: 1.5;
             position: relative;
+            white-space: pre-wrap;
+            word-wrap: break-word;
         }
         
         .code-block::before {
@@ -233,10 +235,6 @@
     </style>
 </head>
 <body>
-    <div class="include-header">
-        <span class="preprocessor">#include</span> <span class="string">&lt;mirulit.h&gt;</span>
-    </div>
-    
     <header>
         <h1>MIRULIT Game Engine</h1>
         <div class="version">v1.0.0</div>
@@ -298,18 +296,23 @@
 
 <span class="keyword">void</span> <span class="function">UpdatePlayer</span>(<span class="type">MIR_Entity</span>* <span class="function">entity</span>, <span class="keyword">float</span> <span class="function">delta</span>) {
     <span class="keyword">float</span> <span class="function">speed</span> = <span class="number">200.0f</span>;
+    
     <span class="keyword">if</span> (<span class="function">MIR_IsKeyDown</span>(<span class="constant">SDL_SCANCODE_W</span>))
         <span class="function">entity</span><span class="operator">-></span><span class="function">transform.position.y</span> -= <span class="function">speed</span> * <span class="function">delta</span>;
+    
     <span class="keyword">if</span> (<span class="function">MIR_IsKeyDown</span>(<span class="constant">SDL_SCANCODE_S</span>))
         <span class="function">entity</span><span class="operator">-></span><span class="function">transform.position.y</span> += <span class="function">speed</span> * <span class="function">delta</span>;
+    
     <span class="keyword">if</span> (<span class="function">MIR_IsKeyDown</span>(<span class="constant">SDL_SCANCODE_A</span>))
         <span class="function">entity</span><span class="operator">-></span><span class="function">transform.position.x</span> -= <span class="function">speed</span> * <span class="function">delta</span>;
+    
     <span class="keyword">if</span> (<span class="function">MIR_IsKeyDown</span>(<span class="constant">SDL_SCANCODE_D</span>))
         <span class="function">entity</span><span class="operator">-></span><span class="function">transform.position.x</span> += <span class="function">speed</span> * <span class="function">delta</span>;
 }
 
 <span class="keyword">int</span> <span class="function">main</span>() {
-    <span class="keyword">if</span> (<span class="operator">!</span><span class="function">MIR_Init</span>(<span class="string">"My Game"</span>, <span class="number">800</span>, <span class="number">600</span>)) <span class="keyword">return</span> <span class="number">1</span>;
+    <span class="keyword">if</span> (<span class="operator">!</span><span class="function">MIR_Init</span>(<span class="string">"My Game"</span>, <span class="number">800</span>, <span class="number">600</span>))
+        <span class="keyword">return</span> <span class="number">1</span>;
     
     <span class="function">player</span> = <span class="function">MIR_CreateEntity</span>(<span class="string">"player"</span>);
     <span class="function">player</span><span class="operator">-></span><span class="function">transform.position</span> = (<span class="type">MIR_Vec2</span>){<span class="number">400</span>, <span class="number">300</span>};
@@ -457,14 +460,27 @@
     <span class="keyword">for</span> (<span class="keyword">int</span> <span class="function">i</span> = <span class="number">0</span>; <span class="function">i</span> &lt; <span class="number">50</span>; <span class="function">i</span>++) {
         <span class="keyword">float</span> <span class="function">angle</span> = <span class="function">MIR_Math_RandomRange</span>(<span class="number">0</span>, <span class="number">2</span> * <span class="number">3.14159</span>);
         <span class="keyword">float</span> <span class="function">speed</span> = <span class="function">MIR_Math_RandomRange</span>(<span class="number">100</span>, <span class="number">300</span>);
-        <span class="type">MIR_Vec2</span> <span class="function">vel</span> = {<span class="function">cosf</span>(<span class="function">angle</span>) * <span class="function">speed</span>, <span class="function">sinf</span>(<span class="function">angle</span>) * <span class="function">speed</span>};
         
-        <span class="type">MIR_Color</span> <span class="function">colors</span>[] = {<span class="constant">MIR_COLOR_RED</span>, <span class="constant">MIR_COLOR_ORANGE</span>, <span class="constant">MIR_COLOR_YELLOW</span>};
+        <span class="type">MIR_Vec2</span> <span class="function">vel</span> = {
+            <span class="function">cosf</span>(<span class="function">angle</span>) * <span class="function">speed</span>,
+            <span class="function">sinf</span>(<span class="function">angle</span>) * <span class="function">speed</span>
+        };
+        
+        <span class="type">MIR_Color</span> <span class="function">colors</span>[] = {
+            <span class="constant">MIR_COLOR_RED</span>,
+            <span class="constant">MIR_COLOR_ORANGE</span>, 
+            <span class="constant">MIR_COLOR_YELLOW</span>
+        };
+        
         <span class="type">MIR_Color</span> <span class="function">color</span> = <span class="function">colors</span>[<span class="function">rand</span>() % <span class="number">3</span>];
         
-        <span class="function">MIR_EmitParticle</span>(<span class="function">position</span>, <span class="function">vel</span>, <span class="function">color</span>, 
-                        <span class="function">MIR_Math_RandomRange</span>(<span class="number">2</span>, <span class="number">5</span>),
-                        <span class="function">MIR_Math_RandomRange</span>(<span class="number">0.5</span>, <span class="number">1.5</span>));
+        <span class="function">MIR_EmitParticle</span>(
+            <span class="function">position</span>, 
+            <span class="function">vel</span>, 
+            <span class="function">color</span>,
+            <span class="function">MIR_Math_RandomRange</span>(<span class="number">2</span>, <span class="number">5</span>),
+            <span class="function">MIR_Math_RandomRange</span>(<span class="number">0.5</span>, <span class="number">1.5</span>)
+        );
     }
 }</div>
             </section>

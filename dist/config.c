@@ -1,4 +1,4 @@
-#include <_Mirulit.h>
+#include <mirulit.h>
 
 MIR_Entity* player = NULL;
 MIR_Entity* enemy = NULL;
