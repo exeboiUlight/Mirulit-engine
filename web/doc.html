@@ -1,0 +1,1735 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MIRULIT Game Engine - Документация</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --accent: #e74c3c;
+            --light: #ecf0f1;
+            --dark: #2c3e50;
+            --code-bg: #2d2d2d;
+            --border: #bdc3c7;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            min-height: 100vh;
+            box-shadow: 0 0 30px rgba(0,0,0,0.3);
+        }
+        
+        header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--dark) 100%);
+            color: white;
+            padding: 3rem 2rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        header::before {
+            content: "";
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px);
+            background-size: 20px 20px;
+            animation: float 20s linear infinite;
+        }
+        
+        @keyframes float {
+            0% { transform: translate(0, 0) rotate(0deg); }
+            100% { transform: translate(-20px, -20px) rotate(360deg); }
+        }
+        
+        .logo {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .logo h1 {
+            font-size: 3.5rem;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(to right, #3498db, #9b59b6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .logo .version {
+            font-size: 1.2rem;
+            opacity: 0.8;
+            letter-spacing: 3px;
+            margin-bottom: 1.5rem;
+        }
+        
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .feature {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 10px;
+            padding: 1.5rem;
+            text-align: center;
+            transition: transform 0.3s ease;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .feature:hover {
+            transform: translateY(-5px);
+            background: rgba(255,255,255,0.2);
+        }
+        
+        .feature i {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            color: #3498db;
+        }
+        
+        .feature h3 {
+            margin-bottom: 0.5rem;
+        }
+        
+        main {
+            padding: 2rem;
+        }
+        
+        .toc {
+            background: var(--light);
+            border-radius: 10px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border-left: 5px solid var(--secondary);
+        }
+        
+        .toc h2 {
+            color: var(--primary);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .toc h2::before {
+            content: "📚";
+        }
+        
+        .toc ul {
+            columns: 2;
+            list-style: none;
+        }
+        
+        .toc li {
+            margin-bottom: 0.5rem;
+            position: relative;
+            padding-left: 1.5rem;
+        }
+        
+        .toc li::before {
+            content: "→";
+            position: absolute;
+            left: 0;
+            color: var(--secondary);
+        }
+        
+        .toc a {
+            color: var(--dark);
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        
+        .toc a:hover {
+            color: var(--secondary);
+            text-decoration: underline;
+        }
+        
+        section {
+            margin-bottom: 3rem;
+            padding: 2rem;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border-top: 3px solid var(--secondary);
+        }
+        
+        section h2 {
+            color: var(--primary);
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--light);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .code-block {
+            background: var(--code-bg);
+            color: #f8f8f2;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            position: relative;
+        }
+        
+        .code-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            color: #aaa;
+            font-size: 0.9rem;
+        }
+        
+        .copy-btn {
+            background: #444;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+        
+        .copy-btn:hover {
+            background: #555;
+        }
+        
+        .code-block pre {
+            margin: 0;
+        }
+        
+        .api-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0;
+        }
+        
+        .api-table th {
+            background: var(--primary);
+            color: white;
+            text-align: left;
+            padding: 1rem;
+        }
+        
+        .api-table td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .api-table tr:hover {
+            background: var(--light);
+        }
+        
+        .warning {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 0 4px 4px 0;
+        }
+        
+        .note {
+            background: #d1ecf1;
+            border-left: 4px solid #0dcaf0;
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 0 4px 4px 0;
+        }
+        
+        .tip {
+            background: #d4edda;
+            border-left: 4px solid #198754;
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 0 4px 4px 0;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            margin-right: 0.5rem;
+        }
+        
+        .badge.c {
+            background: #00599c;
+            color: white;
+        }
+        
+        .badge.sdl {
+            background: #ff6600;
+            color: white;
+        }
+        
+        .badge.mit {
+            background: #555;
+            color: white;
+        }
+        
+        .quick-nav {
+            position: fixed;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            padding: 1rem;
+            display: none;
+            z-index: 1000;
+        }
+        
+        .quick-nav.active {
+            display: block;
+        }
+        
+        .quick-nav a {
+            display: block;
+            padding: 0.5rem;
+            color: var(--dark);
+            text-decoration: none;
+            border-left: 3px solid transparent;
+        }
+        
+        .quick-nav a:hover {
+            border-left-color: var(--secondary);
+            background: var(--light);
+        }
+        
+        .back-to-top {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--secondary);
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.3);
+            z-index: 1000;
+        }
+        
+        .back-to-top.active {
+            display: flex;
+        }
+        
+        .type-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin: 1.5rem 0;
+        }
+        
+        .type-card {
+            background: var(--light);
+            border-radius: 8px;
+            padding: 1.5rem;
+            border: 1px solid var(--border);
+        }
+        
+        .type-card h4 {
+            color: var(--primary);
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--border);
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                margin: 0;
+                border-radius: 0;
+            }
+            
+            .toc ul {
+                columns: 1;
+            }
+            
+            .features {
+                grid-template-columns: 1fr;
+            }
+            
+            header {
+                padding: 2rem 1rem;
+            }
+            
+            .logo h1 {
+                font-size: 2.5rem;
+            }
+        }
+        
+        .color-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+        
+        .color-item {
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+        
+        .color-preview {
+            height: 60px;
+        }
+        
+        .color-info {
+            padding: 0.5rem;
+            background: white;
+            text-align: center;
+        }
+        
+        .example-tabs {
+            margin: 2rem 0;
+        }
+        
+        .tab-buttons {
+            display: flex;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .tab-btn {
+            padding: 0.75rem 1.5rem;
+            background: none;
+            border: none;
+            cursor: pointer;
+            position: relative;
+            color: var(--dark);
+        }
+        
+        .tab-btn.active {
+            color: var(--secondary);
+            font-weight: bold;
+        }
+        
+        .tab-btn.active::after {
+            content: "";
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: var(--secondary);
+        }
+        
+        .tab-content {
+            display: none;
+            padding: 1.5rem 0;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <h1>MIRULIT Game Engine</h1>
+                <div class="version">v1.0.0</div>
+                <p>Легковесный игровой движок на C с SDL3</p>
+                <div class="badges">
+                    <span class="badge c">C99</span>
+                    <span class="badge sdl">SDL3</span>
+                    <span class="badge mit">MIT License</span>
+                </div>
+            </div>
+            
+            <div class="features">
+                <div class="feature">
+                    <i class="fas fa-gamepad"></i>
+                    <h3>Entity Component System</h3>
+                    <p>Простая система сущностей с компонентами</p>
+                </div>
+                <div class="feature">
+                    <i class="fas fa-fire"></i>
+                    <h3>Система частиц</h3>
+                    <p>1000+ частиц с физикой и цветовыми эффектами</p>
+                </div>
+                <div class="feature">
+                    <i class="fas fa-camera"></i>
+                    <h3>2D Камера</h3>
+                    <p>Зум, поворот, плавное движение, тряска</p>
+                </div>
+                <div class="feature">
+                    <i class="fas fa-bolt"></i>
+                    <h3>Высокая производительность</h3>
+                    <p>До 1024 сущностей, оптимизированный рендеринг</p>
+                </div>
+            </div>
+        </header>
+        
+        <main>
+            <div class="toc">
+                <h2><i class="fas fa-bookmark"></i> Содержание</h2>
+                <ul>
+                    <li><a href="#overview">Обзор движка</a></li>
+                    <li><a href="#quickstart">Быстрый старт</a></li>
+                    <li><a href="#configuration">Конфигурация</a></li>
+                    <li><a href="#data-structures">Структуры данных</a></li>
+                    <li><a href="#core-api">API Ядра</a></li>
+                    <li><a href="#entities-api">Сущности</a></li>
+                    <li><a href="#graphics-api">Графика</a></li>
+                    <li><a href="#particles-api">Частицы</a></li>
+                    <li><a href="#camera-api">Камера</a></li>
+                    <li><a href="#collisions-api">Коллизии</a></li>
+                    <li><a href="#math-api">Математика</a></li>
+                    <li><a href="#examples">Примеры</a></li>
+                </ul>
+            </div>
+            
+            <section id="overview">
+                <h2><i class="fas fa-info-circle"></i> Обзор движка</h2>
+                <p><strong>MIRULIT</strong> — это легковесный 2D игровой движок на языке C, построенный на SDL3. Предназначен для быстрой разработки игр с минимальными зависимостями.</p>
+                
+                <div class="note">
+                    <strong>Примечание:</strong> Движок находится в активной разработке. API может меняться между версиями.
+                </div>
+                
+                <h3>Основные возможности:</h3>
+                <ul>
+                    <li>✅ Полноценная система сущностей (Entity Component System)</li>
+                    <li>✅ Управление частицами с физикой</li>
+                    <li>✅ 2D камера с зумом, вращением и тряской</li>
+                    <li>✅ Система коллизий AABB</li>
+                    <li>✅ Полная поддержка ввода (клавиатура, мышь)</li>
+                    <li>✅ Управление временем и FPS</li>
+                    <li>✅ Статистика и отладочная информация</li>
+                    <li>✅ Поддержка SDL3 и совместимость с C99</li>
+                </ul>
+            </section>
+            
+            <section id="quickstart">
+                <h2><i class="fas fa-rocket"></i> Быстрый старт</h2>
+                
+                <h3>Минимальный пример игры:</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>main.c</span>
+                        <button class="copy-btn" onclick="copyCode(this)">Копировать</button>
+                    </div>
+                    <pre><code>#include "mirulit.h"
+
+MIR_Entity* player = NULL;
+
+void UpdatePlayer(MIR_Entity* entity, float delta) {
+    // Движение WASD
+    float speed = 200.0f;
+    if (MIR_IsKeyDown(SDL_SCANCODE_W))
+        entity->transform.position.y -= speed * delta;
+    if (MIR_IsKeyDown(SDL_SCANCODE_S))
+        entity->transform.position.y += speed * delta;
+    if (MIR_IsKeyDown(SDL_SCANCODE_A))
+        entity->transform.position.x -= speed * delta;
+    if (MIR_IsKeyDown(SDL_SCANCODE_D))
+        entity->transform.position.x += speed * delta;
+}
+
+int main(int argc, char* argv[]) {
+    // Инициализация движка
+    if (!MIR_Init("My First Game", 800, 600)) {
+        return 1;
+    }
+    
+    // Создание игрока
+    player = MIR_CreateEntity("player");
+    player->transform.position = (MIR_Vec2){400, 300};
+    player->transform.scale = (MIR_Vec2){50, 50};
+    player->sprite.color = MIR_COLOR_GREEN;
+    player->update = UpdatePlayer;
+    
+    // Основной игровой цикл
+    while (MIR_IsRunning()) {
+        MIR_ProcessEvents();
+        MIR_BeginFrame();
+        
+        MIR_UpdateEntities();
+        MIR_UpdateParticles();
+        MIR_ResolveCollisions();
+        
+        MIR_DrawEntities();
+        MIR_DrawParticles();
+        MIR_DrawDebugInfo();
+        
+        MIR_EndFrame();
+    }
+    
+    MIR_Shutdown();
+    return 0;
+}</code></pre>
+                </div>
+                
+                <h3>Компиляция:</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>Terminal</span>
+                        <button class="copy-btn" onclick="copyCode(this)">Копировать</button>
+                    </div>
+                    <pre><code># Компиляция с GCC
+gcc -o game main.c -I./mirulit -L./mirulit -lmirulit -lSDL3 -lm
+
+# Или с CMake
+cmake_minimum_required(VERSION 3.10)
+project(MyGame)
+
+add_executable(game main.c)
+target_link_libraries(game mirulit SDL3::SDL3 m)</code></pre>
+                </div>
+            </section>
+            
+            <section id="configuration">
+                <h2><i class="fas fa-cog"></i> Конфигурация</h2>
+                
+                <h3>Макросы препроцессора:</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>mirulit.h (раскомментируйте нужные)</span>
+                        <button class="copy-btn" onclick="copyCode(this)">Копировать</button>
+                    </div>
+                    <pre><code>// Дополнительные возможности (требуют установки библиотек)
+// #define MIRULIT_ENABLE_SDL_IMAGE   // Для PNG/JPG текстур
+// #define MIRULIT_ENABLE_SDL_TTF     // Для работы со шрифтами
+// #define MIRULIT_ENABLE_PHYSICS     // Расширенная физика</code></pre>
+                </div>
+                
+                <h3>Лимиты движка:</h3>
+                <table class="api-table">
+                    <thead>
+                        <tr>
+                            <th>Константа</th>
+                            <th>Значение</th>
+                            <th>Описание</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>MIRULIT_MAX_ENTITIES</code></td>
+                            <td>1024</td>
+                            <td>Максимальное количество сущностей</td>
+                        </tr>
+                        <tr>
+                            <td><code>MIRULIT_MAX_PARTICLES</code></td>
+                            <td>1000</td>
+                            <td>Максимальное количество частиц</td>
+                        </tr>
+                        <tr>
+                            <td><code>MIRULIT_MAX_KEYS</code></td>
+                            <td>512</td>
+                            <td>Отслеживаемые клавиши клавиатуры</td>
+                        </tr>
+                        <tr>
+                            <td><code>MIRULIT_DEFAULT_FPS</code></td>
+                            <td>60</td>
+                            <td>FPS по умолчанию</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <h3>Предопределенные цвета:</h3>
+                <div class="color-grid">
+                    <div class="color-item">
+                        <div class="color-preview" style="background: rgb(255, 255, 255)"></div>
+                        <div class="color-info"><code>MIR_COLOR_WHITE</code></div>
+                    </div>
+                    <div class="color-item">
+                        <div class="color-preview" style="background: rgb(255, 50, 50)"></div>
+                        <div class="color-info"><code>MIR_COLOR_RED</code></div>
+                    </div>
+                    <div class="color-item">
+                        <div class="color-preview" style="background: rgb(50, 255, 50)"></div>
+                        <div class="color-info"><code>MIR_COLOR_GREEN</code></div>
+                    </div>
+                    <div class="color-item">
+                        <div class="color-preview" style="background: rgb(50, 100, 255)"></div>
+                        <div class="color-info"><code>MIR_COLOR_BLUE</code></div>
+                    </div>
+                    <div class="color-item">
+                        <div class="color-preview" style="background: rgb(255, 255, 50)"></div>
+                        <div class="color-info"><code>MIR_COLOR_YELLOW</code></div>
+                    </div>
+                    <div class="color-item">
+                        <div class="color-preview" style="background: rgb(30, 30, 40)"></div>
+                        <div class="color-info"><code>MIR_COLOR_BACKGROUND</code></div>
+                    </div>
+                </div>
+            </section>
+            
+            <section id="data-structures">
+                <h2><i class="fas fa-database"></i> Структуры данных</h2>
+                
+                <div class="type-grid">
+                    <div class="type-card">
+                        <h4>MIR_Vec2</h4>
+                        <p>2D вектор</p>
+                        <div class="code-block">
+                            <pre><code>typedef struct { 
+    float x, y; 
+} MIR_Vec2;</code></pre>
+                        </div>
+                        <p><strong>Пример:</strong> <code>MIR_Vec2 pos = {100.0f, 200.0f};</code></p>
+                    </div>
+                    
+                    <div class="type-card">
+                        <h4>MIR_Color</h4>
+                        <p>Цвет RGBA (0-255)</p>
+                        <div class="code-block">
+                            <pre><code>typedef struct { 
+    uint8_t r, g, b, a; 
+} MIR_Color;</code></pre>
+                        </div>
+                    </div>
+                    
+                    <div class="type-card">
+                        <h4>MIR_Rect</h4>
+                        <p>Прямоугольник</p>
+                        <div class="code-block">
+                            <pre><code>typedef struct { 
+    float x, y, w, h; 
+} MIR_Rect;</code></pre>
+                        </div>
+                    </div>
+                </div>
+                
+                <h3>Основные структуры:</h3>
+                
+                <h4>MIR_Entity</h4>
+                <div class="code-block">
+                    <pre><code>typedef struct MIR_Entity {
+    int id;                     // Уникальный ID
+    char tag[32];              // Тег для поиска
+    bool active;               // Активна ли
+    bool visible;              // Видима ли
+    
+    MIR_Transform transform;   // Позиция, масштаб, вращение
+    MIR_Sprite sprite;         // Графика
+    MIR_Collider collider;     // Коллайдер
+    
+    void (*update)(struct MIR_Entity*, float);  // Функция обновления
+    void (*draw)(struct MIR_Entity*);           // Функция отрисовки
+    void (*on_collision)(struct MIR_Entity*, struct MIR_Entity*);
+    void (*on_destroy)(struct MIR_Entity*);
+    
+    void* user_data;          // Пользовательские данные
+} MIR_Entity;</code></pre>
+                </div>
+                
+                <h4>MIR_Transform</h4>
+                <div class="code-block">
+                    <pre><code>typedef struct MIR_Transform {
+    MIR_Vec2 position;      // Позиция
+    MIR_Vec2 scale;         // Масштаб
+    float rotation;         // Вращение в градусах
+    MIR_Vec2 velocity;      // Скорость
+    MIR_Vec2 acceleration;  // Ускорение
+} MIR_Transform;</code></pre>
+                </div>
+                
+                <h4>MIR_Particle</h4>
+                <div class="code-block">
+                    <pre><code>typedef struct {
+    MIR_Vec2 position;
+    MIR_Vec2 velocity;
+    MIR_Vec2 acceleration;
+    MIR_Color color;
+    float size;
+    float life;            // Текущая жизнь
+    float max_life;        // Максимальная жизнь
+    bool active;
+} MIR_Particle;</code></pre>
+                </div>
+            </section>
+            
+            <section id="core-api">
+                <h2><i class="fas fa-microchip"></i> API Ядра</h2>
+                
+                <h3>Инициализация и завершение:</h3>
+                <table class="api-table">
+                    <thead>
+                        <tr>
+                            <th width="30%">Функция</th>
+                            <th width="50%">Описание</th>
+                            <th width="20%">Возвращает</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>MIR_Init(const char* title, int w, int h)</code></td>
+                            <td>Инициализирует движок, создает окно</td>
+                            <td>bool</td>
+                        </tr>
+                        <tr>
+                            <td><code>MIR_Shutdown(void)</code></td>
+                            <td>Корректно завершает работу, освобождает ресурсы</td>
+                            <td>void</td>
+                        </tr>
+                        <tr>
+                            <td><code>MIR_IsRunning(void)</code></td>
+                            <td>Проверяет, работает ли движок</td>
+                            <td>bool</td>
+                        </tr>
+                        <tr>
+                            <td><code>MIR_Quit(void)</code></td>
+                            <td>Завершает игровой цикл</td>
+                            <td>void</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <h3>Игровой цикл:</h3>
+                <table class="api-table">
+                    <thead>
+                        <tr>
+                            <th width="30%">Функция</th>
+                            <th width="70%">Описание</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>MIR_ProcessEvents(void)</code></td>
+                            <td>Обрабатывает события ввода</td>
+                        </tr>
+                        <tr>
+                            <td><code>MIR_BeginFrame(void)</code></td>
+                            <td>Начинает новый кадр, вычисляет delta time</td>
+                        </tr>
+                        <tr>
+                            <td><code>MIR_EndFrame(void)</code></td>
+                            <td>Завершает кадр, ограничивает FPS</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <h3>Управление временем:</h3>
+                <table class="api-table">
+                    <thead>
+                        <tr>
+                            <th width="30%">Функция</th>
+                            <th width="70%">Описание</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>MIR_GetDeltaTime(void)</code></td>
+                            <td>Возвращает время между кадрами (сек)</td>
+                        </tr>
+                        <tr>
+                            <td><code>MIR_GetTime(void)</code></td>
+                            <td>Возвращает время с запуска игры (сек)</td>
+                        </tr>
+                        <tr>
+                            <td><code>MIR_GetFPS(void)</code></td>
+                            <td>Возвращает текущий FPS</td>
+                        </tr>
+                        <tr>
+                            <td><code>MIR_SetTimeScale(float)</code></td>
+                            <td>Устанавливает скорость игры (0.0-5.0)</td>
+                        </tr>
+                        <tr>
+                            <td><code>MIR_SetTargetFPS(int)</code></td>
+                            <td>Устанавливает целевой FPS</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+            
+            <section id="entities-api">
+                <h2><i class="fas fa-cubes"></i> Работа с сущностями</h2>
+                
+                <table class="api-table">
+                    <thead>
+                        <tr>
+                            <th width="30%">Функция</th>
+                            <th width="50%">Описание</th>
+                            <th width="20%">Возвращает</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>MIR_CreateEntity(const char* tag)</code></td>
+                            <td>Создает новую сущность</td>
+                            <td>MIR_Entity*</td>
+                        </tr>
+                        <tr>
+                            <td><code>MIR_DestroyEntity(MIR_Entity*)</code></td>
+                            <td>Уничтожает сущность и её детей</td>
+                            <td>void</td>
+                        </tr>
+                        <tr>
+                            <td><code>MIR_FindEntityByTag(const char*)</code></td>
+                            <td>Ищет сущность по тегу</td>
+                            <td>MIR_Entity*</td>
+                        </tr>
+                        <tr>
+                            <td><code>MIR_FindEntityByID(int id)</code></td>
+                            <td>Ищет сущность по ID</td>
+                            <td>MIR_Entity*</td>
+                        </tr>
+                        <tr>
+                            <td><code>MIR_UpdateEntities(void)</code></td>
+                            <td>Обновляет все активные сущности</td>
+                            <td>void</td>
+                        </tr>
+                        <tr>
+                            <td><code>MIR_DrawEntities(void)</code></td>
+                            <td>Отрисовывает все видимые сущности</td>
+                            <td>void</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <h3>Пример создания сущности:</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>Создание и настройка сущности</span>
+                        <button class="copy-btn" onclick="copyCode(this)">Копировать</button>
+                    </div>
+                    <pre><code>// Создание сущности игрока
+MIR_Entity* player = MIR_CreateEntity("player");
+
+// Настройка трансформации
+player->transform.position = (MIR_Vec2){400, 300};
+player->transform.scale = (MIR_Vec2){50, 50};
+player->transform.rotation = 0.0f;
+
+// Настройка спрайта
+player->sprite.color = MIR_COLOR_BLUE;
+player->sprite.z_index = 1;
+
+// Настройка коллайдера
+player->collider.bounds = (MIR_Rect){-25, -25, 50, 50};
+player->collider.enabled = true;
+
+// Установка callback-функций
+player->update = UpdatePlayer;
+player->draw = DrawPlayer;
+player->on_collision = OnPlayerCollision;
+
+// Пользовательские данные
+player->user_data = malloc(sizeof(PlayerData));
+((PlayerData*)player->user_data)->health = 100;</code></pre>
+                </div>
+            </section>
+            
+            <section id="graphics-api">
+                <h2><i class="fas fa-paint-brush"></i> Графика и рендеринг</h2>
+                
+                <table class="api-table">
+                    <thead>
+                        <tr>
+                            <th width="30%">Функция</th>
+                            <th width="70%">Описание</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>MIR_DrawEntity(MIR_Entity*)</code></td>
+                            <td>Отрисовывает одну сущность</td>
+                        </tr>
+                        <tr>
+                            <td><code>MIR_DrawRect(MIR_Rect, MIR_Color)</code></td>
+                            <td>Рисует заполненный прямоугольник</td>
+                        </tr>
+                        <tr>
+                            <td><code>MIR_DrawCircle(MIR_Vec2, float, MIR_Color, int)</code></td>
+                            <td>Рисует круг</td>
+                        </tr>
+                        <tr>
+                            <td><code>MIR_DrawLine(MIR_Vec2, MIR_Vec2, MIR_Color, float)</code></td>
+                            <td>Рисует линию с толщиной</td>
+                        </tr>
+                        <tr>
+                            <td><code>MIR_LoadTexture(const char*)</code></td>
+                            <td>Загружает текстуру из файла</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <h3>Пример работы с графикой:</h3>
+                <div class="example-tabs">
+                    <div class="tab-buttons">
+                        <button class="tab-btn active" onclick="switchTab('tab1', this)">Примитивы</button>
+                        <button class="tab-btn" onclick="switchTab('tab2', this)">Текстуры</button>
+                        <button class="tab-btn" onclick="switchTab('tab3', this)">Кастомная отрисовка</button>
+                    </div>
+                    
+                    <div id="tab1" class="tab-content active">
+                        <div class="code-block">
+                            <pre><code>// Рисование различных примитивов
+void DrawGameScene(void) {
+    // Прямоугольник
+    MIR_Rect rect = {100, 100, 200, 100};
+    MIR_DrawRect(rect, MIR_COLOR_RED);
+    
+    // Круг
+    MIR_DrawCircle((MIR_Vec2){400, 300}, 50, 
+                   MIR_COLOR_BLUE, 32);
+    
+    // Линия
+    MIR_DrawLine((MIR_Vec2){100, 100}, 
+                 (MIR_Vec2){500, 400},
+                 MIR_COLOR_GREEN, 3.0f);
+    
+    // Точка (маленький круг)
+    MIR_DrawCircle((MIR_Vec2){mouse.x, mouse.y}, 
+                   2, MIR_COLOR_WHITE, 8);
+}</code></pre>
+                        </div>
+                    </div>
+                    
+                    <div id="tab2" class="tab-content">
+                        <div class="code-block">
+                            <pre><code>// Работа с текстурами
+void LoadAndDrawTextures(void) {
+    // Загрузка текстуры
+    SDL_Texture* player_tex = MIR_LoadTexture("player.bmp");
+    
+    // Создание сущности с текстурой
+    MIR_Entity* player = MIR_CreateEntity("player");
+    player->sprite.texture = player_tex;
+    player->sprite.source_rect = (MIR_Rect){0, 0, 64, 64};
+    
+    // Отрисовка
+    MIR_DrawEntity(player);
+}</code></pre>
+                        </div>
+                    </div>
+                    
+                    <div id="tab3" class="tab-content">
+                        <div class="code-block">
+                            <pre><code>// Кастомная функция отрисовки
+void DrawCustomEntity(MIR_Entity* entity) {
+    // Базовая отрисовка через движок
+    MIR_DrawEntity(entity);
+    
+    // Дополнительная отрисовка
+    MIR_Vec2 pos = entity->transform.position;
+    
+    // Рисуем здоровье над сущностью
+    float health = ((CharacterData*)entity->user_data)->health;
+    float maxHealth = ((CharacterData*)entity->user_data)->maxHealth;
+    
+    MIR_Rect health_bg = {pos.x - 30, pos.y - 40, 60, 5};
+    MIR_Rect health_fg = {pos.x - 30, pos.y - 40, 60 * (health/maxHealth), 5};
+    
+    MIR_DrawRect(health_bg, MIR_COLOR_DARKGRAY);
+    MIR_DrawRect(health_fg, MIR_COLOR_GREEN);
+}</code></pre>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <section id="particles-api">
+                <h2><i class="fas fa-fire"></i> Система частиц</h2>
+                
+                <table class="api-table">
+                    <thead>
+                        <tr>
+                            <th width="30%">Функция</th>
+                            <th width="70%">Описание</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>MIR_EmitParticle(MIR_Vec2, MIR_Vec2, MIR_Color, float, float)</code></td>
+                            <td>Создает частицу с гравитацией</td>
+                        </tr>
+                        <tr>
+                            <td><code>MIR_EmitParticleEx(MIR_Vec2, MIR_Vec2, MIR_Vec2, MIR_Color, float, float)</code></td>
+                            <td>Создает частицу с полным контролем</td>
+                        </tr>
+                        <tr>
+                            <td><code>MIR_UpdateParticles(void)</code></td>
+                            <td>Обновляет физику частиц</td>
+                        </tr>
+                        <tr>
+                            <td><code>MIR_DrawParticles(void)</code></td>
+                            <td>Отрисовывает все частицы</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <h3>Пример системы частиц:</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>Создание эффекта взрыва</span>
+                        <button class="copy-btn" onclick="copyCode(this)">Копировать</button>
+                    </div>
+                    <pre><code>void CreateExplosion(MIR_Vec2 position, int count) {
+    for (int i = 0; i < count; i++) {
+        // Случайное направление
+        float angle = MIR_Math_RandomRange(0, 2 * M_PI);
+        float speed = MIR_Math_RandomRange(100, 400);
+        
+        MIR_Vec2 velocity = {
+            cosf(angle) * speed,
+            sinf(angle) * speed
+        };
+        
+        // Случайный цвет огня
+        MIR_Color colors[] = {
+            MIR_COLOR_RED,
+            MIR_COLOR_ORANGE,
+            MIR_COLOR_YELLOW,
+            {255, 100, 0, 255}  // Темно-оранжевый
+        };
+        
+        MIR_Color color = colors[rand() % 4];
+        
+        // Размер и время жизни
+        float size = MIR_Math_RandomRange(3, 8);
+        float life = MIR_Math_RandomRange(0.5, 1.5);
+        
+        // Создание частицы
+        MIR_EmitParticleEx(
+            position,
+            velocity,
+            (MIR_Vec2){0, 200},  // Гравитация вниз
+            color,
+            size,
+            life
+        );
+    }
+}</code></pre>
+                </div>
+                
+                <div class="tip">
+                    <strong>Совет:</strong> Для сложных эффектов создавайте системы частиц - классы, которые управляют группами частиц с общим поведением.
+                </div>
+            </section>
+            
+            <section id="camera-api">
+                <h2><i class="fas fa-camera"></i> Камера</h2>
+                
+                <table class="api-table">
+                    <thead>
+                        <tr>
+                            <th width="30%">Функция</th>
+                            <th width="70%">Описание</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>MIR_SetCameraTarget(MIR_Vec2)</code></td>
+                            <td>Устанавливает цель для плавного движения</td>
+                        </tr>
+                        <tr>
+                            <td><code>MIR_SetCameraZoom(float)</code></td>
+                            <td>Устанавливает уровень зума (0.1-5.0)</td>
+                        </tr>
+                        <tr>
+                            <td><code>MIR_CameraShake(float, float)</code></td>
+                            <td>Запускает тряску камеры</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <h3>Пример управления камерой:</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>Камера, следующая за игроком</span>
+                        <button class="copy-btn" onclick="copyCode(this)">Копировать</button>
+                    </div>
+                    <pre><code>// В основном игровом цикле
+void UpdateCamera(void) {
+    if (player) {
+        // Плавное следование за игроком
+        MIR_SetCameraTarget(player->transform.position);
+        
+        // Зум в зависимости от скорости
+        float speed = sqrtf(
+            player->transform.velocity.x * player->transform.velocity.x +
+            player->transform.velocity.y * player->transform.velocity.y
+        );
+        
+        float targetZoom = 1.0f + speed / 500.0f;
+        targetZoom = MIR_Math_Clamp(targetZoom, 0.8f, 2.0f);
+        
+        // Плавный зум
+        float currentZoom = _mir->camera.zoom;
+        float newZoom = MIR_Math_Lerp(currentZoom, targetZoom, 
+                                     _mir->delta_time * 2.0f);
+        MIR_SetCameraZoom(newZoom);
+        
+        // Тряска при повреждении
+        if (player_took_damage) {
+            MIR_CameraShake(10.0f, 0.3f);
+            player_took_damage = false;
+        }
+    }
+}</code></pre>
+                </div>
+            </section>
+            
+            <section id="collisions-api">
+                <h2><i class="fas fa-crosshairs"></i> Коллизии</h2>
+                
+                <table class="api-table">
+                    <thead>
+                        <tr>
+                            <th width="30%">Функция</th>
+                            <th width="70%">Описание</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>MIR_CheckCollision(MIR_Entity*, MIR_Entity*)</code></td>
+                            <td>Проверяет коллизию между сущностями</td>
+                        </tr>
+                        <tr>
+                            <td><code>MIR_PointCollision(MIR_Vec2)</code></td>
+                            <td>Находит сущность, содержащую точку</td>
+                        </tr>
+                        <tr>
+                            <td><code>MIR_ResolveCollisions(void)</code></td>
+                            <td>Проверяет все коллизии и вызывает callback'и</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <h3>Пример обработки коллизий:</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>Коллизия игрока с врагами</span>
+                        <button class="copy-btn" onclick="copyCode(this)">Копировать</button>
+                    </div>
+                    <pre><code>// Callback функция коллизии
+void OnPlayerEnemyCollision(MIR_Entity* player, MIR_Entity* enemy) {
+    PlayerData* player_data = (PlayerData*)player->user_data;
+    EnemyData* enemy_data = (EnemyData*)enemy->user_data;
+    
+    // Игрок получает урон
+    player_data->health -= enemy_data->damage;
+    
+    // Враг уничтожается
+    enemy->active = false;
+    
+    // Создаем эффект взрыва
+    CreateExplosion(enemy->transform.position, 20);
+    
+    // Добавляем очки
+    player_data->score += enemy_data->points;
+    
+    // Тряска камеры
+    MIR_CameraShake(5.0f, 0.2f);
+}
+
+// Настройка коллайдеров при создании сущностей
+void SetupColliders(void) {
+    // Игрок
+    player->collider.bounds = (MIR_Rect){-20, -20, 40, 40};
+    player->collider.on_collision = OnPlayerEnemyCollision;
+    player->collider.enabled = true;
+    
+    // Враг
+    enemy->collider.bounds = (MIR_Rect){-15, -15, 30, 30};
+    enemy->collider.on_collision = OnPlayerEnemyCollision;
+    enemy->collider.enabled = true;
+}
+
+// В основном цикле
+MIR_ResolveCollisions();</code></pre>
+                </div>
+            </section>
+            
+            <section id="math-api">
+                <h2><i class="fas fa-calculator"></i> Математические функции</h2>
+                
+                <table class="api-table">
+                    <thead>
+                        <tr>
+                            <th width="30%">Функция</th>
+                            <th width="70%">Описание</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>MIR_Math_Lerp(float, float, float)</code></td>
+                            <td>Линейная интерполяция между значениями</td>
+                        </tr>
+                        <tr>
+                            <td><code>MIR_Math_Clamp(float, float, float)</code></td>
+                            <td>Ограничивает значение диапазоном</td>
+                        </tr>
+                        <tr>
+                            <td><code>MIR_Math_Distance(MIR_Vec2, MIR_Vec2)</code></td>
+                            <td>Расстояние между двумя точками</td>
+                        </tr>
+                        <tr>
+                            <td><code>MIR_Math_Normalize(MIR_Vec2)</code></td>
+                            <td>Нормализует вектор</td>
+                        </tr>
+                        <tr>
+                            <td><code>MIR_Math_RandomRange(float, float)</code></td>
+                            <td>Случайное число в диапазоне</td>
+                        </tr>
+                        <tr>
+                            <td><code>MIR_Vec2_Add(MIR_Vec2, MIR_Vec2)</code></td>
+                            <td>Сложение векторов</td>
+                        </tr>
+                        <tr>
+                            <td><code>MIR_Vec2_Subtract(MIR_Vec2, MIR_Vec2)</code></td>
+                            <td>Вычитание векторов</td>
+                        </tr>
+                        <tr>
+                            <td><code>MIR_Vec2_Multiply(MIR_Vec2, float)</code></td>
+                            <td>Умножение вектора на скаляр</td>
+                        </tr>
+                        <tr>
+                            <td><code>MIR_Vec2_Dot(MIR_Vec2, MIR_Vec2)</code></td>
+                            <td>Скалярное произведение</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <h3>Примеры использования:</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>Математические операции</span>
+                        <button class="copy-btn" onclick="copyCode(this)">Копировать</button>
+                    </div>
+<pre><code>// Плавное движение к цели
+MIR_Vec2 MoveTowards(MIR_Vec2 current, MIR_Vec2 target, float speed) {
+    MIR_Vec2 direction = MIR_Vec2_Subtract(target, current);
+    direction = MIR_Math_Normalize(direction);
+    return MIR_Vec2_Add(current, MIR_Vec2_Multiply(direction, speed));
+}
+
+// Проверка дистанции для AI
+bool IsInRange(MIR_Entity* entity, MIR_Vec2 target, float range) {
+    float dist = MIR_Math_Distance(entity->transform.position, target);
+    return dist <= range;
+}
+
+// Плавное появление/исчезновение (fade)
+void UpdateFade(MIR_Entity* entity, float target_alpha, float speed) {
+    float current = entity->sprite.color.a / 255.0f;
+    float new_alpha = MIR_Math_Lerp(current, target_alpha, 
+                                   MIR_GetDeltaTime() * speed);
+    entity->sprite.color.a = (uint8_t)(new_alpha * 255);
+}
+
+// Случайная позиция в круге
+MIR_Vec2 RandomPointInCircle(MIR_Vec2 center, float radius) {
+    float angle = MIR_Math_RandomRange(0, 2 * M_PI);
+    float r = MIR_Math_RandomRange(0, radius);
+    
+    return (MIR_Vec2){
+        center.x + cosf(angle) * r,
+        center.y + sinf(angle) * r
+    };
+}</code></pre>
+                </div>
+            </section>
+            
+            <section id="examples">
+                <h2><i class="fas fa-code"></i> Примеры использования</h2>
+                
+                <h3>Пример 1: Простая аркадная игра</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>Space Shooter - основная логика</span>
+                        <button class="copy-btn" onclick="copyCode(this)">Копировать</button>
+                    </div>
+<pre><code>// Структура для данных игрока
+typedef struct {
+    int score;
+    int lives;
+    float fire_rate;
+    float fire_timer;
+} PlayerData;
+
+// Структура для данных снаряда
+typedef struct {
+    float damage;
+    float speed;
+    MIR_Color trail_color;
+} ProjectileData;
+
+void UpdatePlayer(MIR_Entity* player, float delta) {
+    PlayerData* data = (PlayerData*)player->user_data;
+    
+    // Движение
+    float speed = 300.0f;
+    if (MIR_IsKeyDown(SDL_SCANCODE_W)) player->transform.position.y -= speed * delta;
+    if (MIR_IsKeyDown(SDL_SCANCODE_S)) player->transform.position.y += speed * delta;
+    if (MIR_IsKeyDown(SDL_SCANCODE_A)) player->transform.position.x -= speed * delta;
+    if (MIR_IsKeyDown(SDL_SCANCODE_D)) player->transform.position.x += speed * delta;
+    
+    // Стрельба
+    data->fire_timer += delta;
+    if (MIR_IsKeyDown(SDL_SCANCODE_SPACE) && data->fire_timer >= data->fire_rate) {
+        CreateProjectile(player->transform.position);
+        data->fire_timer = 0;
+        
+        // Эффект отдачи
+        player->transform.position.x -= 5;
+        MIR_CameraShake(2.0f, 0.1f);
+    }
+    
+    // Границы экрана
+    player->transform.position.x = MIR_Math_Clamp(player->transform.position.x, 50, 750);
+    player->transform.position.y = MIR_Math_Clamp(player->transform.position.y, 50, 550);
+}
+
+void CreateProjectile(MIR_Vec2 position) {
+    MIR_Entity* projectile = MIR_CreateEntity("projectile");
+    projectile->transform.position = position;
+    projectile->transform.scale = (MIR_Vec2){5, 15};
+    projectile->transform.velocity = (MIR_Vec2){0, -500};
+    projectile->sprite.color = MIR_COLOR_YELLOW;
+    
+    // Данные снаряда
+    ProjectileData* data = malloc(sizeof(ProjectileData));
+    data->damage = 10;
+    data->speed = 500;
+    data->trail_color = MIR_COLOR_ORANGE;
+    projectile->user_data = data;
+    
+    // Коллайдер
+    projectile->collider.bounds = (MIR_Rect){-2, -7, 4, 14};
+    projectile->collider.on_collision = OnProjectileHit;
+    
+    // Эффект частиц
+    for (int i = 0; i < 3; i++) {
+        MIR_EmitParticle(
+            position,
+            (MIR_Vec2){MIR_Math_RandomRange(-20, 20), 50},
+            MIR_COLOR_ORANGE,
+            MIR_Math_RandomRange(1, 3),
+            0.3f
+        );
+    }
+}</code></pre>
+                </div>
+                
+                <h3>Пример 2: Менеджер игры</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>Управление состоянием игры</span>
+                        <button class="copy-btn" onclick="copyCode(this)">Копировать</button>
+                    </div>
+<pre><code>typedef enum {
+    GAME_STATE_MENU,
+    GAME_STATE_PLAYING,
+    GAME_STATE_PAUSED,
+    GAME_STATE_GAME_OVER
+} GameState;
+
+GameState current_state = GAME_STATE_MENU;
+int score = 0;
+int high_score = 0;
+
+void UpdateGameState(void) {
+    switch (current_state) {
+        case GAME_STATE_MENU:
+            UpdateMenu();
+            if (MIR_IsKeyPressed(SDL_SCANCODE_RETURN)) {
+                StartNewGame();
+                current_state = GAME_STATE_PLAYING;
+            }
+            break;
+            
+        case GAME_STATE_PLAYING:
+            UpdateGame();
+            if (MIR_IsKeyPressed(SDL_SCANCODE_ESCAPE)) {
+                current_state = GAME_STATE_PAUSED;
+                MIR_Pause();
+            }
+            if (IsGameOver()) {
+                current_state = GAME_STATE_GAME_OVER;
+                if (score > high_score) high_score = score;
+            }
+            break;
+            
+        case GAME_STATE_PAUSED:
+            if (MIR_IsKeyPressed(SDL_SCANCODE_ESCAPE)) {
+                current_state = GAME_STATE_PLAYING;
+                MIR_Resume();
+            }
+            if (MIR_IsKeyPressed(SDL_SCANCODE_M)) {
+                current_state = GAME_STATE_MENU;
+                CleanupGame();
+                MIR_Resume();
+            }
+            break;
+            
+        case GAME_STATE_GAME_OVER:
+            UpdateGameOver();
+            if (MIR_IsKeyPressed(SDL_SCANCODE_R)) {
+                StartNewGame();
+                current_state = GAME_STATE_PLAYING;
+            }
+            break;
+    }
+}
+
+void DrawUI(void) {
+    // Отрисовка счета
+    char score_text[64];
+    snprintf(score_text, sizeof(score_text), "Score: %d", score);
+    DrawText(score_text, 10, 10, MIR_COLOR_WHITE);
+    
+    // Отрисовка жизней
+    for (int i = 0; i < player_lives; i++) {
+        MIR_Rect heart = {10 + i * 30, 40, 25, 25};
+        MIR_DrawRect(heart, MIR_COLOR_RED);
+    }
+    
+    // Состояние игры
+    if (current_state == GAME_STATE_PAUSED) {
+        DrawCenteredText("PAUSED", MIR_COLOR_YELLOW);
+        DrawCenteredText("Press ESC to resume", MIR_COLOR_WHITE);
+    }
+    
+    if (current_state == GAME_STATE_GAME_OVER) {
+        DrawCenteredText("GAME OVER", MIR_COLOR_RED);
+        char hs_text[64];
+        snprintf(hs_text, sizeof(hs_text), "High Score: %d", high_score);
+        DrawCenteredText(hs_text, MIR_COLOR_YELLOW);
+        DrawCenteredText("Press R to restart", MIR_COLOR_WHITE);
+    }
+}</code></pre>
+                </div>
+                
+                <div class="warning">
+                    <strong>Важно:</strong> Не забывайте освобождать память при уничтожении сущностей. Используйте <code>on_destroy</code> callback для очистки <code>user_data</code>.
+                </div>
+                
+                <div class="tip">
+                    <strong>Производительность:</strong> Для больших проектов ограничьте количество сущностей и частиц, используйте пулы объектов и избегайте частых аллокаций памяти в основном цикле.
+                </div>
+            </section>
+            
+            <section>
+                <h2><i class="fas fa-download"></i> Установка и использование</h2>
+                
+                <h3>Требования:</h3>
+                <ul>
+                    <li>Компилятор C (GCC, Clang, MSVC)</li>
+                    <li>SDL3 библиотека</li>
+                    <li>CMake (опционально)</li>
+                </ul>
+                
+                <h3>Сборка:</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>Сборка движка</span>
+                        <button class="copy-btn" onclick="copyCode(this)">Копировать</button>
+                    </div>
+<pre><code># Клонирование репозитория
+git clone https://github.com/yourusername/mirulit.git
+cd mirulit
+
+# Сборка библиотеки
+mkdir build && cd build
+cmake ..
+make
+
+# Установка (опционально)
+sudo make install
+
+# Использование в своем проекте
+cp mirulit.h your_project/
+cp libmirulit.a your_project/</code></pre>
+                </div>
+                
+                <h3>Лицензия:</h3>
+                <div class="code-block">
+                    <pre><code>MIT License
+
+Copyright (c) 2024 MIRULIT Engine
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.</code></pre>
+                </div>
+            </section>
+        </main>
+    </div>
+    
+    <div class="quick-nav" id="quickNav">
+        <a href="#overview">Обзор</a>
+        <a href="#quickstart">Старт</a>
+        <a href="#configuration">Конфигурация</a>
+        <a href="#core-api">Ядро</a>
+        <a href="#entities-api">Сущности</a>
+        <a href="#graphics-api">Графика</a>
+        <a href="#examples">Примеры</a>
+    </div>
+    
+    <div class="back-to-top" id="backToTop" onclick="scrollToTop()">
+        <i class="fas fa-arrow-up"></i>
+    </div>
+    
+    <script>
+        // Переключение табов
+        function switchTab(tabId, button) {
+            // Скрыть все табы
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Убрать активность у всех кнопок
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Показать выбранный таб
+            document.getElementById(tabId).classList.add('active');
+            button.classList.add('active');
+        }
+        
+        // Копирование кода
+        function copyCode(button) {
+            const codeBlock = button.closest('.code-block');
+            const code = codeBlock.querySelector('code').textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                const originalText = button.textContent;
+                button.textContent = 'Скопировано!';
+                setTimeout(() => {
+                    button.textContent = originalText;
+                }, 2000);
+            });
+        }
+        
+        // Плавная прокрутка
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href');
+                if (targetId === '#') return;
+                
+                const targetElement = document.querySelector(targetId);
+                if (targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 20,
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+        
+        // Показать/скрыть кнопку "Наверх"
+        window.addEventListener('scroll', () => {
+            const backToTop = document.getElementById('backToTop');
+            const quickNav = document.getElementById('quickNav');
+            
+            if (window.scrollY > 300) {
+                backToTop.classList.add('active');
+                quickNav.classList.add('active');
+            } else {
+                backToTop.classList.remove('active');
+                quickNav.classList.remove('active');
+            }
+        });
+        
+        function scrollToTop() {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        }
+        
+        // Подсветка синтаксиса (упрощенная)
+        function highlightCode() {
+            document.querySelectorAll('code').forEach(block => {
+                let html = block.innerHTML;
+                
+                // Ключевые слова C
+                const keywords = ['int', 'float', 'void', 'char', 'bool', 'true', 'false',
+                                 'if', 'else', 'for', 'while', 'return', 'struct', 'typedef',
+                                 'const', 'static', 'inline', '#include', '#define'];
+                
+                keywords.forEach(keyword => {
+                    const regex = new RegExp(`\\b${keyword}\\b`, 'g');
+                    html = html.replace(regex, `<span style="color: #569cd6">${keyword}</span>`);
+                });
+                
+                // Типы MIRULIT
+                const types = ['MIR_Entity', 'MIR_Vec2', 'MIR_Color', 'MIR_Rect',
+                              'MIR_Transform', 'MIR_Sprite', 'MIR_Collider', 'MIR_Particle'];
+                
+                types.forEach(type => {
+                    const regex = new RegExp(`\\b${type}\\b`, 'g');
+                    html = html.replace(regex, `<span style="color: #4ec9b0">${type}</span>`);
+                });
+                
+                // Функции MIRULIT
+                const functions = ['MIR_Init', 'MIR_Shutdown', 'MIR_CreateEntity', 'MIR_DrawRect',
+                                  'MIR_IsKeyDown', 'MIR_GetDeltaTime', 'MIR_EmitParticle'];
+                
+                functions.forEach(func => {
+                    const regex = new RegExp(`\\b${func}\\b`, 'g');
+                    html = html.replace(regex, `<span style="color: #dcdcaa">${func}</span>`);
+                });
+                
+                // Комментарии
+                html = html.replace(/\/\/.*/g, '<span style="color: #6a9955">$&</span>');
+                
+                // Строки
+                html = html.replace(/".*?"/g, '<span style="color: #ce9178">$&</span>');
+                
+                // Числа
+                html = html.replace(/\b\d+\b/g, '<span style="color: #b5cea8">$&</span>');
+                
+                block.innerHTML = html;
+            });
+        }
+        
+        // Запустить подсветку после загрузки
+        document.addEventListener('DOMContentLoaded', highlightCode);
+    </script>
+</body>
+</html>
