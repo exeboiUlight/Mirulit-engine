@@ -297,16 +297,16 @@
 <span class="keyword">void</span> <span class="function">UpdatePlayer</span>(<span class="type">MIR_Entity</span>* <span class="function">entity</span>, <span class="keyword">float</span> <span class="function">delta</span>) {
     <span class="keyword">float</span> <span class="function">speed</span> = <span class="number">200.0f</span>;
     
-    <span class="keyword">if</span> (<span class="function">MIR_IsKeyDown</span>(<span class="constant">SDL_SCANCODE_W</span>))
+    <span class="keyword">if</span> (<span class="function">MIR_IsKeyDown</span>(<span class="constant">SDLK_W</span>))
         <span class="function">entity</span><span class="operator">-></span><span class="function">transform.position.y</span> -= <span class="function">speed</span> * <span class="function">delta</span>;
     
-    <span class="keyword">if</span> (<span class="function">MIR_IsKeyDown</span>(<span class="constant">SDL_SCANCODE_S</span>))
+    <span class="keyword">if</span> (<span class="function">MIR_IsKeyDown</span>(<span class="constant">SDLK_S</span>))
         <span class="function">entity</span><span class="operator">-></span><span class="function">transform.position.y</span> += <span class="function">speed</span> * <span class="function">delta</span>;
     
-    <span class="keyword">if</span> (<span class="function">MIR_IsKeyDown</span>(<span class="constant">SDL_SCANCODE_A</span>))
+    <span class="keyword">if</span> (<span class="function">MIR_IsKeyDown</span>(<span class="constant">SDLK_A</span>))
         <span class="function">entity</span><span class="operator">-></span><span class="function">transform.position.x</span> -= <span class="function">speed</span> * <span class="function">delta</span>;
     
-    <span class="keyword">if</span> (<span class="function">MIR_IsKeyDown</span>(<span class="constant">SDL_SCANCODE_D</span>))
+    <span class="keyword">if</span> (<span class="function">MIR_IsKeyDown</span>(<span class="constant">SDLK_D</span>))
         <span class="function">entity</span><span class="operator">-></span><span class="function">transform.position.x</span> += <span class="function">speed</span> * <span class="function">delta</span>;
 }
 
