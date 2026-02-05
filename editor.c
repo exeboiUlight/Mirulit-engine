@@ -433,6 +433,7 @@ int main(int argc, char** argv) {
     tcc_add_include_path(tcc, ".");
     tcc_add_include_path(tcc, "src");
     tcc_add_include_path(tcc, ".");
+    tcc_add_include_path(tcc, "mirulit");
     
     // Добавляем пользовательские пути include
     for (int i = 0; i < include_count; i++) {
