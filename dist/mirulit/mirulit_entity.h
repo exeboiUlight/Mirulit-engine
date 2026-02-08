@@ -19,6 +19,14 @@ typedef struct MIR_Sprite {
     bool flip_y;
 } MIR_Sprite;
 
+typedef struct MIR_Text {
+    char* content;
+    MIR_Color color;
+    int font_size;
+    bool visible;
+    void (*on_text_changed)(struct MIR_Entity*);
+} MIR_Text;
+
 typedef struct MIR_Collider {
     MIR_Rect bounds;
     bool is_trigger;
@@ -36,6 +44,7 @@ struct MIR_Entity {
     
     MIR_Transform transform;
     MIR_Sprite sprite;
+    MIR_Text text;
     MIR_Collider collider;
     
     void* components[10];
