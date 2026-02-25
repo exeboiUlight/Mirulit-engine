@@ -89,7 +89,7 @@ static bool _mir_initialized = false;
 
 // ==================== ЯДРО ДВИЖКА ====================
 
-static bool MIR_Init(const char* title, int width, int height) {
+static bool MIR_Init(const char* title, int width, int height, bool FULLSREEN, bool _3D) {
     if (_mir_initialized) return true;
     
     // Инициализация SDL
@@ -107,14 +107,26 @@ static bool MIR_Init(const char* title, int width, int height) {
     }
     
     // Создание окна
-    _mir->window = SDL_CreateWindow(title, width, height, SDL_WINDOW_RESIZABLE);
+    if (!FULLSREEN) {
+        _mir->window = SDL_CreateWindow(title, width, height, SDL_WINDOW_RESIZABLE);
+    } else {
+        _mir->window = SDL_CreateWindow(title, width, height, SDL_WINDOW_FULLSCREEN);
+    }
     if (!_mir->window) {
         printf("[MIRULIT] Window creation failed: %s\n", SDL_GetError());
         free(_mir);
         SDL_Quit();
         return false;
     }
+
+    SDL_GPUDevice* gpuDevice = SDL_CreateGPUDevice(
+        SDL_GPU_SHADERFORMAT_SPIRV | SDL_GPU_SHADERFORMAT_DXIL, 
+        _3D,
+        NULL
+    );
     
+    SDL_ClaimWindowForGPUDevice(gpuDevice, _mir->window);
+
     // Создание рендерера
     _mir->renderer = SDL_CreateRenderer(_mir->window, NULL);
     if (!_mir->renderer) {
