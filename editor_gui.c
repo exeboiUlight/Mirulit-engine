@@ -1,6 +1,8 @@
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
 #include <glad/glad.h>
+#include <stdlib.h>
+#include <stdbool.h>
 
 #define NK_IMPLEMENTATION
 #define NK_INCLUDE_FIXED_TYPES
@@ -246,17 +248,7 @@ int main(void) {
     
     printf("Application started with 3D interface and styled buttons!\n");
     
-    double last_time = glfwGetTime();
-    int frame_count = 0;
-    
     while (!glfwWindowShouldClose(window)) {
-        double current_time = glfwGetTime();
-        frame_count++;
-        if (current_time - last_time >= 1.0) {
-            printf("FPS: %d\n", frame_count);
-            frame_count = 0;
-            last_time = current_time;
-        }
         
         glfwPollEvents();
         
@@ -269,105 +261,11 @@ int main(void) {
         glClearColor(0.1f, 0.1f, 0.2f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
         
-        /* Title Bar */
-        if (nk_begin(ctx, "TitleBar", nk_rect(0, 0, width, 40),
-            NK_WINDOW_NO_SCROLLBAR | NK_WINDOW_NO_INPUT)) {
-            
-            struct nk_command_buffer* canvas = nk_window_get_canvas(ctx);
-            
-            // Градиентный фон title bar
-            for (int i = 0; i < 40; i++) {
-                float t = (float)i / 40;
-                struct nk_color grad_color = nk_rgb(
-                    30 + (int)(20 * t),
-                    30 + (int)(20 * t),
-                    30 + (int)(20 * t)
-                );
-                nk_fill_rect(canvas, nk_rect(0, i, width, 1), 0, grad_color);
-            }
-            
-            // Нижняя граница с подсветкой
-            nk_fill_rect(canvas, nk_rect(0, 38, width, 2), 0, nk_rgb(80, 80, 100));
-            
-            // Логотип (стилизованная кнопка)
-            draw_styled_button(canvas, 8, 6, 30, 28, 
-                              nk_rgb(60, 60, 80),
-                              g_state.menu_pressed, g_state.menu_hover, "M",
-                              &font->handle);
-            
-            // Заголовок с тенью
-            nk_draw_text(canvas, nk_rect(46, 12, 400, 20), 
-                        "Mirulit Game Engine (Y2K Edition)", 34, &font->handle, 
-                        nk_rgb(180, 180, 200), nk_rgba(0, 0, 0, 0));
-            nk_draw_text(canvas, nk_rect(45, 11, 400, 20), 
-                        "Mirulit Game Engine (Y2K Edition)", 34, &font->handle, 
-                        nk_rgb(220, 220, 255), nk_rgba(0, 0, 0, 0));
-            
-            // Кнопки управления со стилизованными иконками
-            draw_icon(canvas, width - 48, 8, 24, 24, "close",
-                     nk_rgb(200, 60, 60), g_state.close_pressed, g_state.close_hover);
-            
-            draw_icon(canvas, width - 88, 8, 24, 24, "maximize",
-                     nk_rgb(60, 60, 200), g_state.maximize_pressed, g_state.maximize_hover);
-            
-            draw_icon(canvas, width - 128, 8, 24, 24, "minimize",
-                     nk_rgb(60, 200, 60), g_state.minimize_pressed, g_state.minimize_hover);
-        }
-        nk_end(ctx);
+        #include "engine/title_bar.h"
+        titlebar(ctx, width, height);
         
-        /* Контент */
-        if (nk_begin(ctx, "Content", nk_rect(5, 45, width - 10, height - 50),
-            NK_WINDOW_BORDER | NK_WINDOW_TITLE)) {
-            
-            nk_layout_row_dynamic(ctx, 30, 1);
-            nk_label(ctx, "Welcome to Y2K Edition!", NK_TEXT_LEFT);
-            
-            nk_layout_row_dynamic(ctx, 40, 2);
-            
-            // Стилизованные кнопки
-            if (nk_button_label(ctx, "Test Button")) {
-                show_status("Button clicked!");
-            }
-            if (nk_button_label(ctx, "Switch Cursor")) {
-                static int demo_cursor = 0;
-                demo_cursor = (demo_cursor + 1) % 7;
-                switch (demo_cursor) {
-                    case 0: glfwSetCursor(window, g_state.cursor_arrow); show_status("Arrow cursor"); break;
-                    case 1: glfwSetCursor(window, g_state.cursor_hand); show_status("Hand cursor"); break;
-                    case 2: glfwSetCursor(window, g_state.cursor_move); show_status("Move cursor"); break;
-                    case 3: glfwSetCursor(window, g_state.cursor_text); show_status("Text cursor"); break;
-                    case 4: glfwSetCursor(window, g_state.cursor_crosshair); show_status("Crosshair cursor"); break;
-                    case 5: glfwSetCursor(window, g_state.cursor_wait); show_status("Wait cursor"); break;
-                    case 6: glfwSetCursor(window, g_state.cursor_help); show_status("Help cursor"); break;
-                }
-                g_state.current_cursor = demo_cursor;
-            }
-            
-            nk_layout_row_dynamic(ctx, 25, 1);
-            nk_label(ctx, "Retro 3D interface with styled buttons!", NK_TEXT_LEFT);
-            
-            nk_layout_row_dynamic(ctx, 25, 1);
-            const char* cursor_names[] = {"Arrow", "Hand", "Move", "Text", "Crosshair", "Wait", "Help"};
-            char info[256];
-            sprintf(info, "Current cursor: %s", cursor_names[g_state.current_cursor]);
-            nk_label_colored(ctx, info, NK_TEXT_LEFT, nk_rgb(100, 255, 100));
-        }
-        nk_end(ctx);
-        
-        /* Status Message */
-        if (g_state.show_status) {
-            time_t now = time(NULL);
-            if (now - g_state.status_time > 2) {
-                g_state.show_status = 0;
-            } else {
-                if (nk_begin(ctx, "Status", nk_rect(width/2 - 150, height/2 - 15, 300, 30),
-                    NK_WINDOW_NO_SCROLLBAR | NK_WINDOW_BACKGROUND)) {
-                    nk_layout_row_dynamic(ctx, 30, 1);
-                    nk_label_colored(ctx, g_state.status_msg, NK_TEXT_CENTERED, nk_rgb(100, 255, 100));
-                }
-                nk_end(ctx);
-            }
-        }
+        #include "engine/hub.h"
+        Hub(ctx, width, height);
         
         nk_glfw3_render(&glfw_state, NK_ANTI_ALIASING_ON, 1024*1024, 256*1024);
         glfwSwapBuffers(window);
