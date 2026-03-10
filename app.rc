@@ -1,6 +1,6 @@
 #include <windows.h>
 
-IDI_APP_ICON ICON "web/app.ico"
+IDI_APP_ICON ICON "icon.ico"
 
 VS_VERSION_INFO VERSIONINFO
 FILEVERSION 1,0,0,1
@@ -15,13 +15,13 @@ BEGIN
     BEGIN
         BLOCK "040904E4"
         BEGIN
-            VALUE "Comments", "Mirulit Game Engine Editor"
+            VALUE "Comments", "Mirulit Game Engine"
             VALUE "CompanyName", "MiruLit-studio"
-            VALUE "FileDescription", "Mirulit Editor"
+            VALUE "FileDescription", "a general-purpose game engine"
             VALUE "FileVersion", "1.0.0.1"
-            VALUE "InternalName", "editor"
-            VALUE "LegalCopyright", "Copyright © 2024 MiruLit-studio"
-            VALUE "OriginalFilename", "editor.exe"
+            VALUE "InternalName", "mirulit"
+            VALUE "LegalCopyright", "Copyright © 2026 MiruLit-studio"
+            VALUE "OriginalFilename", "Mirulit.exe"
             VALUE "ProductName", "Mirulit Game Engine"
             VALUE "ProductVersion", "1.0.0.1"
         END
