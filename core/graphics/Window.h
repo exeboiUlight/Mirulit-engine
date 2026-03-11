@@ -29,9 +29,9 @@ class Window {
             glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
             glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-            window = glfwCreateWindow(width, height, title, nullptr, nullptr);
+            // glfwWindowHint(GLFW_DECORATED, GLFW_FALSE);
 
-            
+            window = glfwCreateWindow(width, height, title, nullptr, nullptr);
 
             if (!window) {
                 std::cerr << "Failed to create GLFW window" << std::endl;

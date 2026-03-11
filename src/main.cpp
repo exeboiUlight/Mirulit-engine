@@ -2,13 +2,13 @@
 
 #include "../core/core.h"
 
+using namespace MirulitEngine;
+
 void update() {
-    glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+    glClearColor(104/255.0f, 212/255.0f, 1.0f, 1.0f);
 }
 
 int main() {
-
-    using namespace MirulitEngine;
 
     Window window(1200, 600, "Hello mirulit");
 

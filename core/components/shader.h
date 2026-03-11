@@ -1,7 +1,7 @@
 #pragma once
 
 #include <glad/glad.h>
-#include <../math/Vectors.h>
+#include "../math/Vectors.h"
 #include <string>
 #include <fstream>
 #include <sstream>
@@ -11,7 +11,6 @@ namespace MirulitComponencts {
     class Shader {
         private:
             unsigned int m_ID;
-            const char* codeShader;
             
             void checkCompileErrors(unsigned int shader, const std::string& type) {
                 int success;
@@ -33,7 +32,7 @@ namespace MirulitComponencts {
             }
             
         public:
-            Shader(const char* vertexCode, const char* fragmentCode) {
+            Shader(const char* vertexCode, const char* fragmentCode, bool isCode = true) {
                 unsigned int vertexShader = glCreateShader(GL_VERTEX_SHADER);
                 glShaderSource(vertexShader, 1, &vertexCode, NULL);
                 glCompileShader(vertexShader);
@@ -44,7 +43,6 @@ namespace MirulitComponencts {
                 glCompileShader(fragmentShader);
                 checkCompileErrors(fragmentShader, "FRAGMENT");
                 
-                // Создаем шейдерную программу
                 m_ID = glCreateProgram();
                 glAttachShader(m_ID, vertexShader);
                 glAttachShader(m_ID, fragmentShader);
@@ -55,7 +53,7 @@ namespace MirulitComponencts {
                 glDeleteShader(fragmentShader);
             }
             
-            Shader(const char* vertexPath, const char* fragmentPath) {
+            Shader(const char* vertexPath, const char* fragmentPath, const char* type = "file") {
                 std::string vertexCode;
                 std::string fragmentCode;
                 std::ifstream vShaderFile;
@@ -102,6 +100,10 @@ namespace MirulitComponencts {
                 
                 glDeleteShader(vertexShader);
                 glDeleteShader(fragmentShader);
+            }
+            
+            static Shader* LoadFromFile(const char* vertexPath, const char* fragmentPath) {
+                return new Shader(vertexPath, fragmentPath, "file");
             }
             
             void use() const {
