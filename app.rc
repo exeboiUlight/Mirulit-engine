@@ -17,7 +17,6 @@ BEGIN
         BEGIN
             VALUE "Comments", "Mirulit Game Engine"
             VALUE "CompanyName", "MiruLit-studio"
-            VALUE "FileDescription", "a general-purpose game engine"
             VALUE "FileVersion", "1.0.0.1"
             VALUE "InternalName", "mirulit"
             VALUE "LegalCopyright", "Copyright © 2026 MiruLit-studio"

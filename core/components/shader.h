@@ -7,7 +7,7 @@
 #include <sstream>
 #include <iostream>
 
-namespace MirulitComponencts {
+namespace MirulitComponenets {
     class Shader {
         private:
             unsigned int m_ID;
@@ -32,6 +32,8 @@ namespace MirulitComponencts {
             }
             
         public:
+            Shader() {}
+
             Shader(const char* vertexCode, const char* fragmentCode, bool isCode = true) {
                 unsigned int vertexShader = glCreateShader(GL_VERTEX_SHADER);
                 glShaderSource(vertexShader, 1, &vertexCode, NULL);
