@@ -1,13 +1,13 @@
 #pragma once
 
 #include <glad/glad.h>
-#include "../math/Vectors.h"
+#include "../../../math/Vectors.h"
 #include <string>
 #include <fstream>
 #include <sstream>
 #include <iostream>
 
-namespace MirulitComponenets {
+namespace MirulitComponets {
     class Shader {
         private:
             unsigned int m_ID;

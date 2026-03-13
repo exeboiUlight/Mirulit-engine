@@ -1,11 +1,13 @@
 #pragma once
 
-#include "../math/Vectors.h"
+#include "../../../math/Vectors.h"
 #include "shader.h"
 #include <vector>
 #include <iostream>
 
-namespace MirulitComponenets {
+#define OpenGL_Mirulit
+
+namespace MirulitComponets {
     using MirulitMath::Vector2f;
     
     class Mesh {

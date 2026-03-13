@@ -3,19 +3,27 @@ import os
 print("1| debug\n2| release\n3| leave\n4| compile resourses")
 mode = int(input("::"))
 
-output_command = "g++ -L./lib -I./include "
+output_command = "g++ -L./lib -I./include -I./external/imgui -I./external/imgui/backends "
 
 output_file = "Mirulit.exe"
 
 source_files = [
     "src/main.cpp",
     "include/glad/glad.c",
+#     "external/imgui/imgui.cpp",
+#     "external/imgui/imgui_demo.cpp",
+#     "external/imgui/imgui_draw.cpp",
+#     "external/imgui/imgui_tables.cpp",
+#     "external/imgui/imgui_widgets.cpp",
+#     "external/imgui/backends/imgui_impl_glfw.cpp",
+#     "external/imgui/backends/imgui_impl_opengl3.cpp",
 ]
 
 liberys = [
     "opengl32",
     "glfw3",
     "gdi32",
+    "libtcc"
 ]
 
 if mode == 4:

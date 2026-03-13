@@ -30,6 +30,10 @@ namespace MirulitEngine {
 
                 window = glfwCreateWindow(width, height, title, nullptr, nullptr);
 
+                glfwSetFramebufferSizeCallback(window, [](GLFWwindow* window, int width, int height){
+                    glViewport(0, 0, width, height);
+                });
+
                 if (!window) {
                     std::cerr << "Failed to create GLFW window" << std::endl;
                     glfwTerminate();
