@@ -11,9 +11,11 @@ namespace MirulitEngine {
             int width;
             int height;
             const char* title;
-            GLFWwindow* window = nullptr;
 
         public:
+
+            GLFWwindow* window = nullptr;
+
             Window(int width, int height, const char* title) {
                 this->width = width;
                 this->height = height;

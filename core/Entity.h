@@ -98,5 +98,17 @@ namespace MirulitEngine {
                     mesh->draw();
                 }
             }
+
+            void SetPosition(MirulitMath::Vector2f pos) {
+                shader->setVec2("position", pos);
+            }
+
+            void SetRotate(float rot) {
+                shader->setFloat("rotate", rot);
+            }
+
+            void SetScale(MirulitMath::Vector2f sca) {
+                shader->setVec2("position", sca);
+            }
     };
 }
