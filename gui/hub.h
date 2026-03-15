@@ -298,7 +298,7 @@ private:
     char newProjectName[128] = "";
     char newProjectPath[256] = "";
     char newProjectAuthor[64] = "";
-    bool createDefaultMain = true;
+    char selectedTemplate[64] = "";  // Добавляем переменную для выбранного шаблона
     
     // Для настроек
     bool darkTheme = true;
@@ -496,117 +496,49 @@ private:
     
     void CreateProjectFiles(const std::string& name, const std::string& path) {
         try {
-            std::filesystem::create_directories(path + "/bin");
-            std::filesystem::create_directories(path + "/src");
-            std::filesystem::create_directories(path + "/assets");
-            std::filesystem::create_directories(path + "/assets/textures");
-            std::filesystem::create_directories(path + "/assets/shaders");
-            std::filesystem::create_directories(path + "/assets/fonts");
+            // Просто копируем шаблон из assets/examples/ если выбран шаблон
+            if (strlen(selectedTemplate) > 0) {
+                std::string templatePath = std::string("assets/examples/") + selectedTemplate;
+                if (std::filesystem::exists(templatePath)) {
+                    try {
+                        // Копируем все файлы из шаблона
+                        for (const auto& entry : std::filesystem::recursive_directory_iterator(templatePath)) {
+                            if (std::filesystem::is_regular_file(entry.path())) {
+                                std::string relativePath = std::filesystem::relative(entry.path(), templatePath).string();
+                                std::string destPath = path + "/" + relativePath;
+                                
+                                // Создаем директории если нужно
+                                std::filesystem::create_directories(std::filesystem::path(destPath).parent_path());
+                                
+                                // Копируем файл
+                                std::filesystem::copy_file(entry.path(), destPath, std::filesystem::copy_options::overwrite_existing);
+                            }
+                        }
+                        printf("Template '%s' copied successfully\n", selectedTemplate);
+                    } catch (const std::exception& e) {
+                        printf("Error copying template: %s\n", e.what());
+                    }
+                } else {
+                    printf("Template '%s' not found in assets/examples/\n", selectedTemplate);
+                }
+            }
             
-            std::string currentTime = GetCurrentTime();
-            
-            // Создаём файл проекта
+            // Создаём файл проекта с информацией о шаблоне
             std::ofstream projFile(path + "/" + name + ".mirulitproject");
             if (projFile.is_open()) {
                 projFile << "[MirulitProject]\n";
                 projFile << "Name = " << name << "\n";
                 projFile << "Author = " << (newProjectAuthor[0] ? newProjectAuthor : "Unknown") << "\n";
-                projFile << "Created = " << currentTime << "\n";
-                projFile << "LastModified = " << currentTime << "\n";
-                projFile << "Version = 1.0.0\n";
-                projFile << "BuildType = Debug\n";
-                projFile << "Target = executable\n";
+                projFile << "Created = " << GetCurrentTime() << "\n";
+                projFile << "LastModified = " << GetCurrentTime() << "\n";
+                projFile << "Version = 1.1.0\n";
+                projFile << "Template = " << (strlen(selectedTemplate) > 0 ? selectedTemplate : "none") << "\n";
                 projFile.close();
-            }
-            
-            if (createDefaultMain) {
-                std::ofstream mainFile(path + "/src/main.c");
-                if (mainFile.is_open()) {
-                    mainFile << GetMainTemplate();
-                    mainFile.close();
-                }
-            }
-            
-            // Создаём README.md
-            std::ofstream readmeFile(path + "/README.md");
-            if (readmeFile.is_open()) {
-                readmeFile << "# " << name << "\n\n";
-                readmeFile << "## Description\n";
-                readmeFile << "A Mirulit Engine project created by " << (newProjectAuthor[0] ? newProjectAuthor : "Unknown") << "\n\n";
-                readmeFile << "## Structure\n";
-                readmeFile << "- `src/` - Source code files\n";
-                readmeFile << "- `assets/` - Game assets (textures, sounds, etc.)\n";
-                readmeFile << "- `bin/` - Compiled binaries\n\n";
-                readmeFile << "## Build\n";
-                readmeFile << "Use CMake to build the project:\n";
-                readmeFile << "```\n";
-                readmeFile << "mkdir build\n";
-                readmeFile << "cd build\n";
-                readmeFile << "cmake ..\n";
-                readmeFile << "cmake --build .\n";
-                readmeFile << "```\n";
-                readmeFile.close();
-            }
-            
-            // Создаём .gitignore
-            std::ofstream gitignoreFile(path + "/.gitignore");
-            if (gitignoreFile.is_open()) {
-                gitignoreFile << "# Build directories\n";
-                gitignoreFile << "build/\n";
-                gitignoreFile << "bin/\n";
-                gitignoreFile << "*.exe\n";
-                gitignoreFile << "*.dll\n";
-                gitignoreFile << "*.lib\n";
-                gitignoreFile << "*.obj\n\n";
-                gitignoreFile << "# IDE files\n";
-                gitignoreFile << ".vs/\n";
-                gitignoreFile << ".vscode/\n";
-                gitignoreFile << "*.swp\n";
-                gitignoreFile << "*.swo\n\n";
-                gitignoreFile << "# Logs\n";
-                gitignoreFile << "*.log\n";
-                gitignoreFile.close();
             }
             
         } catch (const std::exception& e) {
             printf("Error creating project: %s\n", e.what());
         }
-    }
-    
-    std::string GetMainTemplate() {
-        return R"(
-            int main() {
-                // Создание окна
-                GLFWwindow* window = Window_create(800, 600, "JIT Window");
-
-                // Создание сущности
-                void* entity = Entity_create(0.0f, 0.0f, 1.0f, 1.0f, 0.0f);
-                Entity_setRect(entity);
-                Entity_initRender(entity, "assets/textures/cube.png");
-
-                // Главный цикл
-                while (!Window_shouldClose(window)) {
-                    Window_clear(0.1f, 0.1f, 0.2f, 1.0f);
-
-                    // Вращение
-                    static float rot = 0.0f;
-                    rot += 0.01f;
-                    Entity_setRotation(entity, rot);
-
-                    // Отрисовка
-                    Entity_draw(entity);
-
-                    Window_swapBuffers(window);
-                    Window_pollEvents();
-                }
-
-                // Очистка
-                Entity_destroy(entity);
-                Window_destroy(window);
-
-                return 0;
-            }
-        )";
     }
     
     void OpenProject(const ProjectInfo& info) {
@@ -811,6 +743,53 @@ private:
         
         ImGui::Dummy(ImVec2(0, 15));
         
+        // Выбор шаблона
+        ImGui::SetCursorPosX(50);
+        ImGui::TextColored(ImVec4(0.8f, 0.8f, 1.0f, 1.0f), "Template");
+        ImGui::SetCursorPosX(50);
+        
+        // Получаем список доступных шаблонов
+        std::vector<std::string> templates;
+        templates.push_back("None");
+        
+        if (std::filesystem::exists("assets/examples")) {
+            for (const auto& entry : std::filesystem::directory_iterator("assets/examples")) {
+                if (std::filesystem::is_directory(entry.path())) {
+                    templates.push_back(entry.path().filename().string());
+                }
+            }
+        }
+        
+        // Преобразуем в массив для Combo
+        std::vector<const char*> templateItems;
+        for (const auto& t : templates) {
+            templateItems.push_back(t.c_str());
+        }
+        
+        int currentTemplate = 0;
+        for (size_t i = 0; i < templates.size(); i++) {
+            if (templates[i] == selectedTemplate) {
+                currentTemplate = i;
+                break;
+            }
+        }
+        
+        ImGui::PushItemWidth(300);
+        if (ImGui::Combo("##template", &currentTemplate, templateItems.data(), templateItems.size())) {
+            if (currentTemplate == 0) {
+                selectedTemplate[0] = '\0';
+            } else {
+                #ifdef _WIN32
+                strcpy_s(selectedTemplate, templates[currentTemplate].c_str());
+                #else
+                strcpy(selectedTemplate, templates[currentTemplate].c_str());
+                #endif
+            }
+        }
+        ImGui::PopItemWidth();
+        
+        ImGui::Dummy(ImVec2(0, 15));
+        
         // Автор
         ImGui::SetCursorPosX(50);
         ImGui::TextColored(ImVec4(0.8f, 0.8f, 1.0f, 1.0f), "Author");
@@ -818,30 +797,7 @@ private:
         ImGui::InputText("##author", newProjectAuthor, IM_ARRAYSIZE(newProjectAuthor));
         ImGui::Dummy(ImVec2(0, 15));
         
-        // Опции
-        ImGui::SetCursorPosX(50);
-        ImGui::TextColored(ImVec4(0.8f, 0.8f, 1.0f, 1.0f), "Options");
-        ImGui::SetCursorPosX(70);
-        ImGui::Checkbox("Create default main.c", &createDefaultMain);
-        if (ImGui::IsItemHovered()) {
-            ImGui::SetTooltip("Generate a sample main.c file with basic OpenGL code");
-        }
-        
         ImGui::PopItemWidth();
-        
-        // Информационная панель
-        ImGui::SetCursorPosY(400);
-        ImGui::SetCursorPosX(50);
-        ImGui::BeginChild("Info", ImVec2(windowWidth - 100, 100), true);
-        
-        ImGui::TextColored(ImVec4(0.6f, 0.6f, 1.0f, 1.0f), "📋  Project Structure");
-        ImGui::Dummy(ImVec2(0, 5));
-        ImGui::TextDisabled("• src/ - Source code files");
-        ImGui::TextDisabled("• assets/ - Game assets (textures, sounds, etc.)");
-        ImGui::TextDisabled("• bin/ - Compiled binaries");
-        ImGui::TextDisabled("• README.md - Project documentation");
-        
-        ImGui::EndChild();
         
         // Кнопки
         ImGui::SetCursorPosY(windowHeight - 80);
@@ -875,6 +831,7 @@ private:
                 SaveRecentProject(newProject);
                 
                 memset(newProjectName, 0, sizeof(newProjectName));
+                selectedTemplate[0] = '\0'; // Сбрасываем выбор шаблона
                 currentPage = PAGE_WELCOME;
             }
             ImGui::PopStyleColor(2);

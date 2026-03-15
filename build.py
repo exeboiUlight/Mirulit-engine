@@ -1,11 +1,15 @@
 import os
 
-print("1| debug\n2| release\n3| leave\n4| compile resourses")
+print("1| debug\n2| release\n3| leave\n4| compile resourses\n5| compile dll")
 mode = int(input("::"))
 
 output_command = "g++ -L./lib -I./include -I./external/imgui -I./external/imgui/backends "
 
 output_file = "Mirulit.exe"
+
+if mode == 5:
+    os.system("g++ -L./lib -I./include -shared -o ./bin/debug/assets/examples/mirulit.dll src/mirulit_dll.cpp include/glad/glad.c -lopengl32 -lglfw3 -lgdi32")
+    exit()
 
 source_files = [
     "src/main.cpp",
@@ -23,7 +27,6 @@ liberys = [
     "opengl32",
     "glfw3",
     "gdi32",
-    "libtcc"
 ]
 
 if mode == 4:

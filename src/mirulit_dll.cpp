@@ -1,4 +1,3 @@
-// mirulit_dll.cpp
 #define MIRULIT_EXPORTS
 #define STB_IMAGE_IMPLEMENTATION
 
@@ -8,27 +7,33 @@
 #include <string>
 #include <memory>
 #include <mutex>
+#include <chrono>
 
-// Подключаем оригинальные заголовки
+#include <glad/glad.h>
+#include <GLFW/glfw3.h>
+
 #include "../core/Entity.h"
 #include "../core/graphics/Window.h"
-#include "../gui/hub.h"
 
-// Подключаем C интерфейс
 #include "mirulit_c.h"
 
 // Глобальное состояние
 static bool g_Initialized = false;
 static std::mutex g_Mutex;
+static float g_ClearColor[4] = {0.0f, 0.0f, 0.0f, 1.0f};
 
 // ==================== Классы-обертки для C интерфейса ====================
 
 struct MirulitWindow {
     std::unique_ptr<MirulitEngine::Window> impl;
     void (*updateCallback)(void) = nullptr;
+    float clearColor[4] = {0.0f, 0.0f, 0.0f, 1.0f};
     
     MirulitWindow(int width, int height, const char* title) 
-        : impl(std::make_unique<MirulitEngine::Window>(width, height, title)) {}
+        : impl(std::make_unique<MirulitEngine::Window>(width, height, title)) {
+        // Сохраняем цвет очистки
+        memcpy(clearColor, g_ClearColor, sizeof(clearColor));
+    }
 };
 
 struct MirulitEntity {
@@ -40,26 +45,6 @@ struct MirulitEntity {
     MirulitEntity(MirulitMath::Vector2f position, MirulitMath::Vector2f scale, float rotate)
         : impl(std::make_unique<MirulitEngine::Entity>(position, scale, rotate))
         , lastPosition(position), lastScale(scale), lastRotate(rotate) {}
-};
-
-struct MirulitHub {
-    std::unique_ptr<MirulitGUI::Hub> impl;
-    std::vector<MirulitProjectInfo> recentProjectsCache;
-    std::vector<std::string> stringStorage;
-    
-    MirulitHub() : impl(std::make_unique<MirulitGUI::Hub>()) {
-        updateRecentProjectsCache();
-    }
-    
-    void updateRecentProjectsCache() {
-        // Очищаем кеш
-        recentProjectsCache.clear();
-        stringStorage.clear();
-        
-        // Здесь нужно получить последние проекты из Hub
-        // Это зависит от реализации Hub::GetRecentProjects()
-        // Для примера добавим заглушку
-    }
 };
 
 // ==================== Реализация C интерфейса ====================
@@ -116,12 +101,32 @@ MIRULIT_API void Mirulit_WindowUpdate(MirulitWindow* window) {
 MIRULIT_API void Mirulit_WindowUpdateCallback(MirulitWindow* window, void (*callback)(void)) {
     if (window && window->impl) {
         window->updateCallback = callback;
-        window->impl->update([window]() {
-            if (window->updateCallback) {
-                window->updateCallback();
+        
+        // Запускаем цикл с колбэком
+        while (!window->impl->shouldClose()) {
+            // Устанавливаем цвет очистки
+            glClearColor(window->clearColor[0], window->clearColor[1], 
+                        window->clearColor[2], window->clearColor[3]);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            
+            if (callback) {
+                callback();
             }
-        });
+            
+            glfwSwapBuffers(window->impl->getGLFWwindow());
+            glfwPollEvents();
+        }
     }
+}
+
+MIRULIT_API void Mirulit_WindowSetClearColor(float r, float g, float b, float a) {
+    g_ClearColor[0] = r;
+    g_ClearColor[1] = g;
+    g_ClearColor[2] = b;
+    g_ClearColor[3] = a;
+    
+    // Если окно уже существует, обновляем его цвет
+    // Примечание: цвет будет применен при следующем glClear
 }
 
 MIRULIT_API void* Mirulit_GetGLFWwindow(MirulitWindow* window) {
@@ -187,7 +192,6 @@ MIRULIT_API void Mirulit_EntitySetPosition(MirulitEntity* entity, MirulitVector2
     if (entity && entity->impl) {
         entity->lastPosition = MirulitMath::Vector2f(position.x, position.y);
         entity->impl->transform.position = entity->lastPosition;
-        // Обновляем шейдер если нужно
         if (entity->impl->shader) {
             entity->impl->SetPosition(entity->lastPosition);
         }
@@ -226,67 +230,7 @@ MIRULIT_API MirulitTransform Mirulit_EntityGetTransform(MirulitEntity* entity) {
     return transform;
 }
 
-// GUI Hub
-MIRULIT_API MirulitHub* Mirulit_CreateHub(void) {
-    try {
-        return new MirulitHub();
-    } catch (const std::exception& e) {
-        std::cerr << "Failed to create hub: " << e.what() << std::endl;
-        return nullptr;
-    }
-}
-
-MIRULIT_API void Mirulit_DestroyHub(MirulitHub* hub) {
-    delete hub;
-}
-
-MIRULIT_API void Mirulit_HubRender(MirulitHub* hub) {
-    if (hub && hub->impl) {
-        hub->impl->Render();
-    }
-}
-
-MIRULIT_API int Mirulit_HubIsLoading(MirulitHub* hub) {
-    return hub && hub->impl ? hub->impl->IsLoading() : 0;
-}
-
-MIRULIT_API void Mirulit_HubSetDarkTheme(int dark) {
-    // Эта функция должна быть добавлена в класс Hub
-    // Для примера используем существующую
-    if (dark) {
-        MirulitGUI::SetDarkStyle();
-    }
-}
-
-MIRULIT_API void Mirulit_HubSetUIScale(float scale) {
-    ImGui::GetIO().FontGlobalScale = scale;
-}
-
-MIRULIT_API void Mirulit_HubSetDefaultAuthor(const char* author) {
-    // Нужно добавить в класс Hub
-}
-
-MIRULIT_API void Mirulit_HubOpenProject(MirulitHub* hub, const char* projectPath) {
-    if (hub && hub->impl && projectPath) {
-        // Нужно добавить метод OpenProject в класс Hub
-        // hub->impl->OpenProject(projectPath);
-    }
-}
-
-MIRULIT_API void Mirulit_HubCreateProject(MirulitHub* hub, const char* name, const char* path, const char* author) {
-    if (hub && hub->impl && name && path) {
-        // Нужно добавить метод CreateProject в класс Hub
-    }
-}
-
-MIRULIT_API const MirulitProjectInfo* Mirulit_HubGetRecentProjects(MirulitHub* hub, int* count) {
-    if (!hub || !count) return nullptr;
-    hub->updateRecentProjectsCache();
-    *count = static_cast<int>(hub->recentProjectsCache.size());
-    return hub->recentProjectsCache.data();
-}
-
-// Вспомогательные функции
+// Утилиты для работы с векторами
 MIRULIT_API MirulitVector2f Mirulit_Vector2f(float x, float y) {
     MirulitVector2f v = {x, y};
     return v;
@@ -308,6 +252,62 @@ MIRULIT_API MirulitVector2f Mirulit_Vector2fNormalize(MirulitVector2f v) {
         v.y /= len;
     }
     return v;
+}
+
+MIRULIT_API float Mirulit_Vector2fDot(MirulitVector2f a, MirulitVector2f b) {
+    return a.x * b.x + a.y * b.y;
+}
+
+MIRULIT_API MirulitVector2f Mirulit_Vector2fAdd(MirulitVector2f a, MirulitVector2f b) {
+    MirulitVector2f result = {a.x + b.x, a.y + b.y};
+    return result;
+}
+
+MIRULIT_API MirulitVector2f Mirulit_Vector2fSub(MirulitVector2f a, MirulitVector2f b) {
+    MirulitVector2f result = {a.x - b.x, a.y - b.y};
+    return result;
+}
+
+MIRULIT_API MirulitVector2f Mirulit_Vector2fMul(MirulitVector2f v, float scalar) {
+    MirulitVector2f result = {v.x * scalar, v.y * scalar};
+    return result;
+}
+
+// Время
+MIRULIT_API float Mirulit_GetTime(void) {
+    static auto startTime = std::chrono::high_resolution_clock::now();
+    auto currentTime = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<float> elapsed = currentTime - startTime;
+    return elapsed.count();
+}
+
+MIRULIT_API void Mirulit_WaitEvents(void) {
+    glfwWaitEvents();
+}
+
+MIRULIT_API void Mirulit_PollEvents(void) {
+    glfwPollEvents();
+}
+
+// Ввод
+MIRULIT_API int Mirulit_GetKey(MirulitWindow* window, int key) {
+    if (window && window->impl) {
+        return glfwGetKey(window->impl->getGLFWwindow(), key);
+    }
+    return GLFW_RELEASE;
+}
+
+MIRULIT_API int Mirulit_GetMouseButton(MirulitWindow* window, int button) {
+    if (window && window->impl) {
+        return glfwGetMouseButton(window->impl->getGLFWwindow(), button);
+    }
+    return GLFW_RELEASE;
+}
+
+MIRULIT_API void Mirulit_GetMousePos(MirulitWindow* window, double* x, double* y) {
+    if (window && window->impl && x && y) {
+        glfwGetCursorPos(window->impl->getGLFWwindow(), x, y);
+    }
 }
 
 } // extern "C"
