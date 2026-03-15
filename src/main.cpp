@@ -7,35 +7,28 @@
 
 #include "../core/core.h"
 #include "../gui/window.h"
-#include "../gui/windows/filemenanger.h"
-#include "../gui/editor.h"
+#include "../gui/hub.h"
 
 using namespace MirulitEngine;
 using namespace MirulitComponets;
 
 int main() {
-    Window window(1200, 600, "Mirulit Engine Editor");
+    MirulitEngine::Window window(1000, 700, "Mirulit Engine 2.0.0");
     
-    MirulitGUI::init(window.window);
+    MirulitGUI::init(window.getGLFWwindow());
     
-    // Создаем редактор
-    MirulitGUI::Editor editor;
-    
-    Entity test({0, 0}, {0.2, 0.2}, 0);
-    test.Circle(64);
-    test.initRender("assets/textures/cube.png");
+    MirulitGUI::Hub hub;
     
     window.update([&]() {
         MirulitGUI::updateStart();
         
-        // Рендерим интерфейс редактора
-        editor.Render();
-        
-        // Ваша сцена (может рендериться в отдельную текстуру)
-        glClearColor(0.4078f, 0.83137f, 1.0f, 1.0f);
-        test.draw();
+        hub.Render();
         
         MirulitGUI::updateEnd();
+        
+        if (!hub.IsLoading()) {
+            
+        }
     });
     
     MirulitGUI::CleanUp();

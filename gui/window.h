@@ -1,4 +1,4 @@
-// window.h - Add these functions
+// window.h
 #pragma once
 
 #include <imgui.h>
@@ -9,6 +9,7 @@ namespace MirulitGUI {
     void SetDarkStyle() {
         ImGuiStyle& style = ImGui::GetStyle();
         ImVec4* colors = style.Colors;
+        style.WindowMenuButtonPosition = ImGuiDir_None;
         
         colors[ImGuiCol_WindowBg] = ImVec4(0.1f, 0.1f, 0.1f, 1.0f);
         colors[ImGuiCol_TitleBg] = ImVec4(0.15f, 0.15f, 0.15f, 1.0f);
@@ -27,10 +28,10 @@ namespace MirulitGUI {
         io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
         io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
         
-        ImFont* font = io.Fonts->AddFontFromFileTTF("assets/SpaceNova-6Rpd1.otf", 16.0f);
+        ImFont* font = io.Fonts->AddFontFromFileTTF("assets/Rubik-VariableFont_wght.ttf", 16.0f);
         if (font == nullptr) {
             io.Fonts->AddFontDefault();
-            std::cerr << "Warning: Could not load SpaceNova font, using default font" << std::endl;
+            std::cerr << "Warning: Could not load font, using default font" << std::endl;
         }
         
         ImGui_ImplGlfw_InitForOpenGL(window, true);
