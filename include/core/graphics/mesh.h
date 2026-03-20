@@ -24,6 +24,18 @@ namespace Engine {
         Vector3 Position;
         Vector3 Normal;
         Vector2 TexCoords;
+        
+        // Для использования в unordered_map
+        bool operator==(const Vertex& other) const {
+            return Position.x == other.Position.x &&
+                   Position.y == other.Position.y &&
+                   Position.z == other.Position.z &&
+                   Normal.x == other.Normal.x &&
+                   Normal.y == other.Normal.y &&
+                   Normal.z == other.Normal.z &&
+                   TexCoords.x == other.TexCoords.x &&
+                   TexCoords.y == other.TexCoords.y;
+        }
     };
     
     class Mesh {
@@ -106,6 +118,10 @@ namespace Engine {
             glDrawElements(GL_TRIANGLES, m_IndexCount, GL_UNSIGNED_INT, 0);
             glBindVertexArray(0);
         }
+        
+        // Getters
+        unsigned int GetVertexCount() const { return m_VertexCount; }
+        unsigned int GetIndexCount() const { return m_IndexCount; }
         
     private:
         unsigned int VAO = 0, VBO = 0, EBO = 0;
